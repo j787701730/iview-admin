@@ -22,7 +22,7 @@ export default {
   components: {},
   methods: {
     getData: () => {
-      ajax('/api/Adminrelas-Logs-csLogs', {}, true,
+      ajax('/Adminrelas-Logs-csLogs', {}, true,
         (data) => {
           console.log(data)
         },
@@ -32,7 +32,7 @@ export default {
     login: () => {
       var data = Qs.stringify({ psw: '123456',
         username: 'yangxb' })
-      ajax('/api/Index-loginCheck', data, true,
+      ajax('/Index-loginCheck', data, true,
         (data) => {
 
         },
