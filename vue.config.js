@@ -35,9 +35,23 @@ module.exports = {
       .set('_c', resolve('src/components'))
   },
   // 设为false打包时不生成.map文件
-  productionSourceMap: false
+  productionSourceMap: false,
   // 这里写你调用接口的基础路径，来解决跨域，如果设置了代理，那你本地开发环境的axios的baseUrl要写为 '' ，即空字符串
-  // devServer: {
-  //   proxy: 'localhost:3000'
-  // }
+  devServer: {
+    open: true,
+    host: 'localhost',
+    port: 80,
+    https: false,
+    // 以上的ip和端口是我们本机的;下面为需要跨域的
+    proxy: {// 配置跨域
+      '/api': {
+        target: 'http://localhost', // 这里后台的地址模拟的;应该填写你们真实的后台接口
+        ws: true,
+        changOrigin: true, // 允许跨域
+        pathRewrite: {
+          '^/api': ''// 请求的时候使用这个api就可以
+        }
+      }
+    }
+  }
 }

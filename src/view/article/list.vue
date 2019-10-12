@@ -5,10 +5,13 @@
 <template>
   <div>
     <h1>文章列表</h1>
+    <Button @click="getData">请求</Button>
   </div>
 </template>
 
 <script>
+import { ajax } from '@/util'
+import Qs from 'qs'
 
 export default {
   data () {
@@ -16,11 +19,28 @@ export default {
       value: '我要传值给子节点'
     }
   },
-  components: {
-
-  },
+  components: {},
   methods: {
+    getData: () => {
+      ajax('/api/Adminrelas-Logs-csLogs', {}, true,
+        (data) => {
+          console.log(data)
+        },
+        () => {
+        })
+    },
+    login: () => {
+      var data = Qs.stringify({ psw: '123456',
+        username: 'yangxb' })
+      ajax('/api/Index-loginCheck', data, true,
+        (data) => {
 
+        },
+        () => {})
+    }
+  },
+  mounted () {
+    // this.getData()
   }
 }
 </script>
