@@ -30,8 +30,7 @@ export default {
         })
     },
     login: () => {
-      var data = Qs.stringify({ psw: '123456',
-        username: 'yangxb' })
+      const data = Qs.stringify({ psw: '123456', username: 'zhengw' })
       ajax('/Index-loginCheck', data, true,
         (data) => {
 

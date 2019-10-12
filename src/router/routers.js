@@ -399,7 +399,7 @@ export default [
     ]
   },
   {
-    'path': '/components',
+    'path': '/users',
     'name': 'yonghuguanli',
     'meta': {
       'icon': 'logo-buffer',
@@ -420,7 +420,7 @@ export default [
             20
           ]
         },
-        'component': () => import('@/view/components/tree-select/index.vue')
+        'component': () => import('@/view/users/add.vue')
       },
       {
         'path': 'tree_select_page',

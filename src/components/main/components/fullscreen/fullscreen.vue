@@ -81,4 +81,10 @@ export default {
     cursor: pointer;
   }
 }
+
+  @media screen and (max-width: 768px){
+    .full-screen-btn-con .ivu-tooltip-rel{
+      display: none;
+    }
+  }
 </style>
