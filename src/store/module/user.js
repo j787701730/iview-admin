@@ -121,7 +121,7 @@ export default {
               commit('setUserId', data.user_id)
               // console.log(data.access);
               // 权限
-              commit('setAccess', [1, 2, 3, 4, 6, 7,1000])
+              commit('setAccess', data.access)
               commit('setHasGetInfo', true)
               resolve(data)
             })

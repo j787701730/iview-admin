@@ -115,6 +115,10 @@ export default {
       'getUnreadMessageCount'
     ]),
     turnToPage (route) {
+      // 判断手机端, 点击列表,关闭menu
+      if (window.innerWidth < 767 && !this.collapsed) {
+        this.collapsed = !this.collapsed
+      }
       let { name, params, query } = {}
       if (typeof route === 'string') name = route
       else {
