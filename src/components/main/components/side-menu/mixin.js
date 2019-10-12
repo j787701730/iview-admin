@@ -8,7 +8,7 @@ export default {
     showTitle (item) {
       return showTitle(item, this)
     },
-    showChildren(item) {
+    showChildren (item) {
       // item.children.length > 1 子集大于1 才会显示父菜单
       return item.children && (item.children.length > 0 || (item.meta && item.meta.showAlways))
     },
