@@ -14,12 +14,14 @@
         <Input v-model="formValidate.phone" placeholder="电话"></Input>
       </FormItem>
       <FormItem label="密码" prop="password">
-        <Input v-model="formValidate.password" autocomplete="off" type="password" ref="password" placeholder="密码"></Input>
+        <Input v-model="formValidate.password" autocomplete="off" type="password" ref="password" placeholder="密码" @on-blur="pwdBlur"></Input>
+        <div class="ivu-form-item-error-tip">{{pwdErr}}</div>
       </FormItem>
       <FormItem label="确认密码" prop="confirmPassword">
-        <Input v-model="formValidate.confirmPassword" type="password" ref="confirmPassword" placeholder="确认密码"></Input>
+        <Input v-model="formValidate.confirmPassword" type="password" ref="confirmPassword" placeholder="确认密码" @on-blur="pwdBlur2"></Input>
+        <div class="ivu-form-item-error-tip">{{pwdErr2}}</div>
       </FormItem>
-      <FormItem label="E-mail" prop="mail" class="ivu-form-item-error">
+      <FormItem label="E-mail" prop="mail">
         <Input v-model="formValidate.mail" placeholder="Enter your e-mail"></Input>
 <!--        <div class="ivu-form-item-error-tip">真实姓名不能为空</div>-->
       </FormItem>
@@ -33,14 +35,14 @@
       <FormItem label="Date">
         <Row>
           <Col span="11">
-            <FormItem prop="date">
-              <DatePicker type="date" placeholder="Select date" v-model="formValidate.date"></DatePicker>
+            <FormItem prop="date" style="width: 100%">
+              <DatePicker type="date" style="width: 100%" placeholder="Select date" v-model="formValidate.date"></DatePicker>
             </FormItem>
           </Col>
           <Col span="2" style="text-align: center">-</Col>
           <Col span="11">
-            <FormItem prop="time">
-              <TimePicker type="time" placeholder="Select time" v-model="formValidate.time"></TimePicker>
+            <FormItem prop="time" style="width: 100%">
+              <TimePicker type="time" style="width: 100%" placeholder="Select time" v-model="formValidate.time"></TimePicker>
             </FormItem>
           </Col>
         </Row>
@@ -109,6 +111,8 @@ export default {
         time: '',
         desc: ''
       },
+      pwdErr: '',
+      pwdErr2: '',
       ruleValidate: {
         name: [
           { required: true, message: '用户名不能为空', trigger: 'blur' }
@@ -120,12 +124,12 @@ export default {
           { required: true, message: '电话不能为空', trigger: 'blur' }
         ],
         password: [
-          { required: true, message: '密码不能为空', trigger: 'blur' },
-          { validator: this.validatePass1, trigger: 'blur' }
+          { required: true, message: '密码不能为空', trigger: 'blur' }
+          // { validator: this.validatePass1, trigger: 'blur' }
         ],
         confirmPassword: [
-          { required: true, message: '确认密码不能为空', trigger: 'blur' },
-          { validator: this.validatePass, trigger: 'blur' }
+          { required: true, message: '确认密码不能为空', trigger: 'blur' }
+          // { validator: this.validatePass, trigger: 'blur' }
         ],
         mail: [
           { required: true, message: 'Mailbox cannot be empty', trigger: 'blur' },
@@ -151,14 +155,39 @@ export default {
           { required: true, message: 'Please enter a personal introduction', trigger: 'blur' },
           { type: 'string', min: 20, message: 'Introduce no less than 20 words', trigger: 'blur' }
         ]
-      },
-      pwdType: 0
+      }
     }
   },
   methods: {
+    repwd: function (className, text) {
+      this.$refs.password.$parent.$el.className = className ? 'ivu-form-item ivu-form-item-required'
+        : 'ivu-form-item ivu-form-item-required ivu-form-item-error'
+      this.pwdErr = text || ''
+    },
+    repwd2: function (className, text) {
+      this.$refs.confirmPassword.$parent.$el.className = className ? 'ivu-form-item ivu-form-item-required'
+        : 'ivu-form-item ivu-form-item-required ivu-form-item-error'
+      this.pwdErr2 = text || ''
+    },
+    pwdBlur: function (className, text) {
+      if (this.formValidate.password && this.formValidate.password !== this.formValidate.confirmPassword) {
+        this.repwd('', '两次密码不一致')
+      } else {
+        this.repwd('error')
+        this.repwd2('error')
+      }
+    },
+    pwdBlur2: function () {
+      if (this.formValidate.confirmPassword && this.formValidate.password !== this.formValidate.confirmPassword) {
+        this.repwd2('', '两次密码不一致')
+      } else {
+        this.repwd('error')
+        this.repwd2('error')
+      }
+    },
     handleSubmit (name) {
       this.$refs[name].validate((valid) => {
-        if (valid) {
+        if (valid && this.formValidate.password === this.formValidate.confirmPassword) {
           this.$Message.success('Success!')
         } else {
           this.$Message.error('Fail!')
@@ -167,6 +196,8 @@ export default {
     },
     handleReset (name) {
       this.$refs[name].resetFields()
+      this.repwd('error')
+      this.repwd2('error')
     },
     validatePass1 (rule, value, callback) {
       // console.log(rule)
@@ -174,12 +205,14 @@ export default {
       this.pwdType = 0
       if (value === '' || value !== this.formValidate.confirmPassword) {
         callback(new Error('两次输入不一致'))
-      } else if (value === this.formValidate.password && this.pwdType === 1) {
-        this.$refs.confirmPassword.$refs.input.focus()
-        this.$refs.confirmPassword.$refs.input.blur()
       } else {
         callback()
       }
+
+      // else if (value === this.formValidate.password && this.pwdType === 1) {
+      //   this.$refs.confirmPassword.$refs.input.focus()
+      //   this.$refs.confirmPassword.$refs.input.blur()
+      // }
 
       // console.log(this.$refs.confirmPassword.$refs.input.blur())
     },
@@ -188,12 +221,14 @@ export default {
       // console.log(value)
       if (value === '' || value !== this.formValidate.password) {
         callback(new Error('两次输入不一致'))
-      } else if (value === this.formValidate.password) {
-        this.$refs.password.$refs.input.focus()
-        this.$refs.password.$refs.input.blur()
       } else {
         callback()
       }
+
+      // else if (value === this.formValidate.password) {
+      //     this.$refs.password.$refs.input.focus()
+      //     this.$refs.password.$refs.input.blur()
+      //   }
     }
 
   }
