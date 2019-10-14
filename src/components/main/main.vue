@@ -20,7 +20,7 @@
         </header-bar>
       </Header>
       <Content class="main-content-con">
-        <Layout class="main-layout-con">
+        <Layout class="main-layout-con" style="background: #fff">
           <div class="tag-nav-wrapper">
             <tags-nav :value="$route" @input="handleClick" :list="tagNavList" @on-close="handleCloseTag"/>
           </div>

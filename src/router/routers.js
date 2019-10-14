@@ -411,7 +411,7 @@ export default [
     'component': Main,
     'children': [
       {
-        'path': 'tree_select_page',
+        'path': 'add',
         'name': 'yonghutianjia',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
@@ -423,8 +423,8 @@ export default [
         'component': () => import('@/view/users/add.vue')
       },
       {
-        'path': 'tree_select_page',
-        'name': 'yonghuguanli',
+        'path': 'manager',
+        'name': 'yonghuguanlilist',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
           'title': '用户管理',
@@ -432,7 +432,7 @@ export default [
             21
           ]
         },
-        'component': () => import('@/view/components/tree-select/index.vue')
+        'component': () => import('@/view/users/manager.vue')
       },
       {
         'path': 'tree_select_page',

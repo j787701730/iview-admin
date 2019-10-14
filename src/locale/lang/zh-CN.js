@@ -68,6 +68,7 @@ export default {
   'wuliufuwu': '物流服务',
   'peixunfuwu': '培训服务',
   'yonghuguanli': '用户管理',
+  'yonghuguanlilist': '用户管理',
   'yonghutianjia': '用户添加',
   'shimingrenzheng': '实名认证',
   'dengluredian': '登录热点',
