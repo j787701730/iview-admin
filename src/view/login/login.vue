@@ -6,10 +6,11 @@
   <div class="login">
     <!-- <test :fun="fun" @fun2="fun2" :value="value"></test> -->
     <div class="login-con">
-      <Card icon="log-in" title="欢迎登录" :bordered="false">
+      <Card icon="log-in" :bordered="false">
+        <p slot="title" style="font-size: 20px;text-align: center">欢迎登录</p>
         <div class="form-con">
-          <login-form @on-success-valid="handleSubmit"></login-form>
-          <p class="login-tip">输入任意用户名和密码即可</p>
+          <login-form @on-success-valid="handleSubmit" :disabled="disabled"></login-form>
+          <p class="login-tip">(请不要在公共电脑记住密码)</p>
         </div>
       </Card>
     </div>
@@ -18,36 +19,28 @@
 
 <script>
 import LoginForm from '_c/login-form'
-import Test from './test'
 import { mapActions } from 'vuex'
 export default {
   data () {
     return {
-      value: '我要传值给子节点'
+      disabled: false
     }
   },
   components: {
-    LoginForm,
-    Test
+    LoginForm
   },
   methods: {
     ...mapActions(['handleLogin', 'getUserInfo']),
     handleSubmit ({ userName, password }) {
+      this.disabled = true
       this.handleLogin({ userName, password }).then(res => {
         this.getUserInfo().then(res => {
+          this.disabled = false
           this.$router.push({
             name: this.$config.homeName
           })
         })
       })
-    },
-    fun (val) {
-      console.log('我是父组件的方法')
-      console.log(val)
-    },
-    fun2 (val) {
-      console.log('我是父组件的方法2')
-      console.log(val)
     }
   }
 }
