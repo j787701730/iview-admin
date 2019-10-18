@@ -5,6 +5,8 @@ import store from '@/store'
 import iView from 'view-design'
 import { setToken, getToken, canTurnTo, setTitle } from '@/libs/util'
 import config from '@/config'
+
+import { ajax } from '@/util'
 const { homeName } = config
 
 Vue.use(Router)
@@ -23,6 +25,7 @@ router.beforeEach((to, from, next) => {
   iView.LoadingBar.start()
   const token = getToken()
   console.log('check-login')
+  console.log(token)
   if (!token && to.name !== LOGIN_PAGE_NAME) {
     // 未登录且要跳转的页面不是登录页
     next({
@@ -40,15 +43,37 @@ router.beforeEach((to, from, next) => {
     if (store.state.user.hasGetInfo) {
       turnTo(to, store.state.user.access, next)
     } else {
-      store.dispatch('getUserInfo').then(user => {
-        // 拉取用户信息，通过用户权限和跳转的页面的name来判断是否有权限访问;access必须是一个数组，如：['super_admin'] ['super_admin', 'admin']
-        turnTo(to, user.access, next)
-      }).catch(() => {
-        setToken('')
-        next({
-          name: 'login'
+      // 判断是否登录
+      ajax('/Adminrelas-Manage-getTest', {}, false,
+        (data) => {
+          let userInfo = {
+            name: 'chenlh',
+            user_id: '2',
+            access: data.data,
+            token: 'chenlh',
+            avatar: 'https://avatars0.githubusercontent.com/u/20942571?s=460&v=4'
+          }
+          console.log('xxxxxx')
+          store.dispatch('setUserInfo', { userInfo }).then(res => {
+            turnTo(to, data.data, next)
+          })
+        },
+        () => {
+          setToken('')
+          next({
+            name: 'login'
+          })
         })
-      })
+
+      // store.dispatch('getUserInfo').then(user => {
+      //   // 拉取用户信息，通过用户权限和跳转的页面的name来判断是否有权限访问;access必须是一个数组，如：['super_admin'] ['super_admin', 'admin']
+      //   turnTo(to, user.access, next)
+      // }).catch(() => {
+      //   setToken('')
+      //   next({
+      //     name: 'login'
+      //   })
+      // })
     }
   }
 })

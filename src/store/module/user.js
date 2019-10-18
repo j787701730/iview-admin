@@ -73,6 +73,19 @@ export default {
     messageTrashCount: state => state.messageTrashList.length
   },
   actions: {
+    // 登录写入数据 zhengw
+    setUserInfo ({ commit }, { userInfo }) {
+      return new Promise((resolve, reject) => {
+        commit('setToken', userInfo.token)
+        commit('setAvatar', userInfo.avatar)
+        commit('setUserName', userInfo.name)
+        commit('setUserId', userInfo.user_id)
+        // 权限
+        commit('setAccess', userInfo.access)
+        commit('setHasGetInfo', true)
+        resolve()
+      })
+    },
     // 登录
     handleLogin ({ commit }, { userName, password }) {
       userName = userName.trim()

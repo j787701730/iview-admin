@@ -20,6 +20,8 @@
 <script>
 import LoginForm from '_c/login-form'
 import { mapActions } from 'vuex'
+import { ajax } from '@/util'
+import Qs from 'qs'
 export default {
   data () {
     return {
@@ -30,17 +32,39 @@ export default {
     LoginForm
   },
   methods: {
-    ...mapActions(['handleLogin', 'getUserInfo']),
+    ...mapActions(['handleLogin', 'getUserInfo', 'setUserInfo']),
     handleSubmit ({ userName, password }) {
       this.disabled = true
-      this.handleLogin({ userName, password }).then(res => {
-        this.getUserInfo().then(res => {
+      // this.handleLogin({ userName, password }).then(res => {
+      //   console.log(res)
+      //   this.getUserInfo().then(res => {
+      //     this.disabled = false
+      //     this.$router.push({
+      //       name: this.$config.homeName
+      //     })
+      //   })
+      // })
+      // 修改 登录
+      const data = Qs.stringify({ psw: password, username: userName })
+      ajax('/Adminrelas-Manage-getTest', data, true,
+        (data) => {
+          let userInfo = {
+            name: userName,
+            user_id: '2',
+            access: data.data,
+            token: userName,
+            avatar: 'https://avatars0.githubusercontent.com/u/20942571?s=460&v=4'
+          }
           this.disabled = false
-          this.$router.push({
-            name: this.$config.homeName
+          this.setUserInfo({ userInfo }).then(res => {
+            this.$router.push({
+              name: this.$config.homeName
+            })
           })
+        },
+        () => {
+          // reject(err)
         })
-      })
     }
   }
 }

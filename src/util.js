@@ -49,3 +49,27 @@ export function ajax (url, data, toast = true, sucFun = null, failFun = null) {
     }
   )
 }
+
+// 日志json转成html
+export function json_msg (data) {
+  let str = ''
+  try {
+    let obj = JSON.parse(data)
+    if (typeof obj === 'object') {
+      str += '<span class="symbol">{</span><ul>'
+      for (let key in obj) {
+        str += '<li>'
+        str += '<span class="property">"<span class="p">' + key +
+          '</span>"</span><span class="symbol"> : </span><span class="string">' +
+          json_msg(JSON.stringify(obj[key])) + '</span>'
+        str += '</li>'
+      }
+      str += '</ul><span class="symbol">}</span>'
+    } else {
+      str += '"' + obj + '"<span class="symbol">,</span>'
+    }
+  } catch (error) {
+    str = data
+  }
+  return str
+}
