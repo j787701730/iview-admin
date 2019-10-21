@@ -63,6 +63,7 @@ export default {
           })
         },
         () => {
+          this.disabled = false
           // reject(err)
         })
     }

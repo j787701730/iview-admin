@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Message } from 'view-design'
 import router from '@/router'
+import { setToken } from '@/libs/util'
 
 export function ajax (url, data, toast = true, sucFun = null, failFun = null) {
   const param = {
@@ -25,12 +26,16 @@ export function ajax (url, data, toast = true, sucFun = null, failFun = null) {
         }
       } else if (res.data.err_code === 88888) { // 登录处理
         // const history = createHashHistory()
-        Message.error({ content: res.data.err_msg, duration: 3 })
+        Message.error({ content: res.data.err_code + ': ' + res.data.err_msg, duration: 3 })
+        if (failFun !== null) {
+          failFun(res.data)
+        }
+        setToken('')
         router.push('/login')
       } else {
         if (toast) {
           // Feedback.toast.error(res.data.err_msg)
-          Message.error({ content: res.data.err_msg })
+          Message.error({ content: res.data.err_code + ': ' + res.data.err_msg })
         }
         if (failFun !== null) {
           failFun(res.data)
@@ -40,7 +45,6 @@ export function ajax (url, data, toast = true, sucFun = null, failFun = null) {
   ).catch(
     () => {
       if (toast) {
-      // Feedback.toast.error('请求失败')
         Message.error({ content: '请求失败' })
       }
       if (failFun !== null) {

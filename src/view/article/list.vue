@@ -54,16 +54,16 @@
     <Table :columns="logsCol" :data="logs">
       <template slot-scope="{ row, index }" slot="in_param">
         <div class="param-con" @mouseleave="outParamMouseLeave">
-          <div class="param-msg" @mouseenter="outParamMouseEnter(row, 'in', $event)">{{row.in_param}}</div>
-          <div class="json-con">
+          <div class="param-msg" @mouseenter="outParamMouseEnter(row, 'in')">{{row.in_param}}</div>
+          <div :class="logMsgClass" v-show="logID==row.log_id+'in'">
             <div v-html="jsonData"></div>
           </div>
         </div>
       </template>
       <template slot-scope="{ row, index }" slot="out_param">
         <div class="param-con" @mouseleave="outParamMouseLeave">
-          <div class="param-msg" @mouseenter="outParamMouseEnter(row, 'out', $event)">{{row.out_param}}</div>
-          <div class="json-con">
+          <div class="param-msg" @mouseenter="outParamMouseEnter(row, 'out')">{{row.out_param}}</div>
+          <div :class="logMsgClass" v-show="logID==row.log_id+'out'">
             <div v-html="jsonData"></div>
           </div>
         </div>
@@ -87,6 +87,8 @@ export default {
       page_count: 20,
       param: {},
       count: 0,
+      logID: '',
+      logMsgClass: '',
       searchData: {
         user_name: '',
         ip: '',
@@ -149,22 +151,22 @@ export default {
       this.curr_page = val
       this.getData()
     },
-    outParamMouseEnter: function (row, type, e) {
+    outParamMouseEnter: function (row, type) {
       if (type === 'in') {
         this.jsonData = json_msg(row.in_param.replace(/[\r\n]/g, ''))
       } else {
         this.jsonData = json_msg(row.out_param.replace(/[\r\n]/g, ''))
       }
+      this.logID = row.log_id + type
       let idx = row._index
       if (idx > this.logs.length - 5 && idx > 5) {
-        e.target.parentNode.querySelector('.json-con').className = 'json-con json-con-bottom'
+        this.logMsgClass = { 'json-con': true, 'json-con-bottom': true }
       } else {
-        e.target.parentNode.querySelector('.json-con').className = 'json-con json-con-top'
+        this.logMsgClass = { 'json-con': true, 'json-con-top': true }
       }
-      e.target.parentNode.querySelector('.json-con').style.display = 'block'
     },
-    outParamMouseLeave: function (e) {
-      e.target.parentNode.querySelector('.json-con').style.display = 'none'
+    outParamMouseLeave: function () {
+      this.logID = ''
     }
   },
   mounted () {
@@ -224,7 +226,6 @@ export default {
     background-color: #fff;
     z-index: 10;
     width: 400px;
-    display: none;
   }
 
   .json-con li {
@@ -240,6 +241,10 @@ export default {
     top: 56px;
   }
 
+  .json-con-bottom {
+    bottom: 56px;
+  }
+
   .json-con-top::before {
     content: '';
     position: absolute;
@@ -247,10 +252,6 @@ export default {
     top: -16px;
     border: 8px solid transparent;
     border-bottom-color: #f40;
-  }
-
-  .json-con-bottom {
-    bottom: 56px;
   }
 
   .json-con-bottom::before {

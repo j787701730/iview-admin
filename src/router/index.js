@@ -26,6 +26,7 @@ router.beforeEach((to, from, next) => {
   const token = getToken()
   console.log('check-login')
   console.log(token)
+  console.log(LOGIN_PAGE_NAME)
   if (!token && to.name !== LOGIN_PAGE_NAME) {
     // 未登录且要跳转的页面不是登录页
     next({
@@ -53,7 +54,6 @@ router.beforeEach((to, from, next) => {
             token: 'chenlh',
             avatar: 'https://avatars0.githubusercontent.com/u/20942571?s=460&v=4'
           }
-          console.log('xxxxxx')
           store.dispatch('setUserInfo', { userInfo }).then(res => {
             turnTo(to, data.data, next)
           })
