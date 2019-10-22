@@ -1,5 +1,5 @@
 <style lang="less">
-@import "./login.less";
+  @import "./login.less";
 </style>
 
 <template>
@@ -22,6 +22,7 @@ import LoginForm from '_c/login-form'
 import { mapActions } from 'vuex'
 import { ajax } from '@/util'
 import Qs from 'qs'
+
 export default {
   data () {
     return {
@@ -46,25 +47,31 @@ export default {
       // })
       // 修改 登录
       const data = Qs.stringify({ psw: password, username: userName })
-      ajax('/Adminrelas-Manage-getTest', data, true,
+      ajax('/Adminrelas-Index-loginCheck', data, true,
         (data) => {
-          let userInfo = {
-            name: userName,
-            user_id: '2',
-            access: data.data,
-            token: userName,
-            avatar: 'https://avatars0.githubusercontent.com/u/20942571?s=460&v=4'
-          }
           this.disabled = false
-          this.setUserInfo({ userInfo }).then(res => {
-            this.$router.push({
-              name: this.$config.homeName
+          ajax('/Adminrelas-Manage-getTest', data, false,
+            (data) => {
+              let userInfo = {
+                name: userName,
+                user_id: '2',
+                access: data.data,
+                token: userName,
+                avatar: 'https://avatars0.githubusercontent.com/u/20942571?s=460&v=4'
+              }
+              this.setUserInfo({ userInfo }).then(res => {
+                this.$router.push({
+                  name: this.$config.homeName
+                })
+              })
+            },
+            () => {
+              this.disabled = false
+              // reject(err)
             })
-          })
         },
         () => {
           this.disabled = false
-          // reject(err)
         })
     }
   }

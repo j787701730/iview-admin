@@ -26,7 +26,6 @@ router.beforeEach((to, from, next) => {
   const token = getToken()
   console.log('check-login')
   console.log(token)
-  console.log(LOGIN_PAGE_NAME)
   if (!token && to.name !== LOGIN_PAGE_NAME) {
     // 未登录且要跳转的页面不是登录页
     next({
