@@ -11,22 +11,22 @@
       <Row>
         <Col :xs="24" :sm="4" :md="6">
           <FormItem label="用户">
-            <Input v-model="searchData.user_name" placeholder=""></Input>
+            <Input v-model="searchData.user_name" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
         <Col :xs="24" :sm="4" :md="6">
           <FormItem label="IP地址">
-            <Input v-model="searchData.ip" placeholder=""></Input>
+            <Input v-model="searchData.ip" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
         <Col :xs="24" :sm="4" :md="6">
           <FormItem label="错误码">
-            <Input v-model="searchData.err_code" placeholder=""></Input>
+            <Input v-model="searchData.err_code" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
         <Col :xs="24" :sm="4" :md="6">
           <FormItem label="访问路径">
-            <Input v-model="searchData.url" placeholder=""></Input>
+            <Input v-model="searchData.url" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
         <Col :xs="24" :sm="4" :md="6">
@@ -51,6 +51,12 @@
     <div style="text-align: center;margin: 0 0 15px 0">
       <Button type="primary" @click="search" icon="ios-search">搜索</Button>
     </div>
+    <div style="margin-bottom: 10px;text-align: right">
+      <span style="vertical-align: middle">共 {{count}} 条</span>
+      <Page style="display: inline-block;vertical-align: middle" v-show="count" :total="count" show-total :current="curr_page"
+            @on-change="pageChange"
+            :page-size="page_count" simple/>
+    </div>
     <Table :columns="logsCol" :data="logs" class="logs-table">
       <template slot-scope="{ row, index }" slot="in_param">
         <div class="param-con" @mouseleave="outParamMouseLeave">
@@ -69,41 +75,14 @@
         </div>
       </template>
     </Table>
-    <div class="logs-card">
-      <div v-for="log in logs" :key="log.log_id" class="logs-card-item">
-        <div>
-          <div class="log-name">用户</div>
-          <div class="log-value">{{log.login_name}}</div>
-        </div>
-        <div>
-          <div class="log-name">输入参数</div>
-          <div class="log-value" @click="logModal(log.in_param)">{{log.in_param}}</div>
-        </div>
-        <div>
-          <div class="log-name">访问路径</div>
-          <div class="log-value">{{log.url}}</div>
-        </div>
-        <div>
-          <div class="log-name">输出参数</div>
-          <div class="log-value" @click="logModal(log.out_param)">{{log.out_param}}</div>
-        </div>
-        <div>
-          <div class="log-name">IP地址</div>
-          <div class="log-value">{{log.ip}}</div>
-        </div>
-        <div>
-          <div class="log-name">操作时间</div>
-          <div class="log-value">{{log.create_date}}</div>
-        </div>
-      </div>
-    </div>
+    <logCard :columns="logColumns" :data="logs" @on-click-log="logModal"></logCard>
     <Page style="text-align: center;margin-top: 15px" v-show="count" :total="count" show-total :current="curr_page" @on-change="pageChange"
           :page-size="page_count"/>
     <Modal
         v-model="logModalShow"
         title="参数格式化"
         footer-hide
-        >
+    >
       <div v-html="logModalHtml" class="json-con-modal"></div>
     </Modal>
   </div>
@@ -112,6 +91,7 @@
 <script>
 import { ajax, json_msg } from '@/util'
 import Qs from 'qs'
+import logCard from './log-card'
 
 export default {
   data () {
@@ -119,6 +99,27 @@ export default {
       logModalShow: false,
       logModalHtml: '',
       jsonData: '',
+      logColumns: [{
+        title: '用户',
+        key: 'login_name'
+      }, {
+        title: '输入参数',
+        key: 'in_param',
+        event: true
+      }, {
+        title: '访问路径',
+        key: 'url'
+      }, {
+        title: '输出参数',
+        key: 'out_param',
+        event: true
+      }, {
+        title: 'IP地址',
+        key: 'ip'
+      }, {
+        title: '操作时间',
+        key: 'create_date'
+      }],
       curr_page: 1,
       page_count: 20,
       param: {},
@@ -155,14 +156,25 @@ export default {
       logs: []
     }
   },
-  components: {},
+  components: {
+    logCard
+  },
   methods: {
-    search: function () {
+    dateFormat: function (date) {
+      let d = new Date(date)
+      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()
+    },
+    search: function (e) {
+      e.target.blur()
       this.curr_page = 1
       for (let o in this.searchData) {
         if (this.searchData.hasOwnProperty(o)) {
-          if (this.searchData[o].trim()) {
-            this.param[o] = this.searchData[o].trim()
+          if (this.searchData[o]) {
+            if (o === 'create_date_min' || o === 'create_date_max') {
+              this.param[o] = this.dateFormat(this.searchData[o])
+            } else {
+              this.param[o] = this.searchData[o]
+            }
           } else {
             delete this.param[o]
           }
@@ -207,7 +219,7 @@ export default {
     cancel: function () {
       this.logModalShow = false
     },
-    logModal: function (val) {
+    logModal (val) {
       this.logModalHtml = json_msg(val.replace(/[\r\n]/g, ''))
       this.logModalShow = true
     }
@@ -234,21 +246,24 @@ export default {
     word-break: break-all;
   }
 
-  .param-msg::-webkit-scrollbar {
+  .param-msg::-webkit-scrollbar,
+  .json-con > div::-webkit-scrollbar {
     width: 8px;
     height: 8px;
     background-color: #f5f5f5;
   }
 
   /*定义滚动条的轨道，内阴影及圆角*/
-  .param-msg::-webkit-scrollbar-track {
+  .param-msg::-webkit-scrollbar-track,
+  .json-con > div::-webkit-scrollbar-track {
     -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, .3);
     border-radius: 10px;
     background-color: #f5f5f5;
   }
 
   /*定义滑块，内阴影及圆角*/
-  .param-msg::-webkit-scrollbar-thumb {
+  .param-msg::-webkit-scrollbar-thumb,
+  .json-con > div::-webkit-scrollbar-thumb {
     /*width: 10px;*/
     height: 20px;
     border-radius: 10px;
@@ -327,40 +342,9 @@ export default {
     margin-left: 15px;
   }
 
-  .logs-card {
-    display: none;
-  }
-
   @media screen and (max-width: 768px) {
     .logs-table {
       display: none;
-    }
-
-    .logs-card {
-      display: block;
-    }
-
-    .logs-card-item {
-      border: 1px solid #ddd;
-      margin-bottom: 15px;
-      padding: 10px 0;
-    }
-
-    .log-name {
-      width: 70px;
-      text-align: right;
-      display: inline-block;
-      padding-right: 12px;
-      vertical-align: top;
-    }
-
-    .log-value {
-      width: ~'calc(100% - 80px)';
-      display: inline-block;
-      word-break: break-all;
-      vertical-align: top;
-      max-height: 60px;
-      overflow: auto;
     }
   }
 </style>
