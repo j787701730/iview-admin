@@ -2,7 +2,7 @@
     <div :class="classes" :style="styles" @click="back">
         <slot>
             <div :class="innerClasses">
-                <i class="ivu-icon ivu-icon-ios-arrow-up"></i>
+                <i class="ivu-icon ivu-icon-ios-arrow-up" style="padding: 8px"></i>
             </div>
         </slot>
     </div>

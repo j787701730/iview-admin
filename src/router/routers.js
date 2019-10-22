@@ -264,7 +264,7 @@ export default [
       },
       {
         'path': 'tree_select_page',
-        'name': 'hangyefenlei',
+        'name': 'gongyingshangfenlei',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
           'title': '供应商分类',
@@ -288,7 +288,7 @@ export default [
       },
       {
         'path': 'tree_select_page',
-        'name': 'cad用户关系',
+        'name': 'cadyonghuguanxi',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
           'title': 'CAD用户关系',
@@ -1016,7 +1016,7 @@ export default [
       },
       {
         'path': 'tree_select_page',
-        'name': null,
+        'name': 'cangkuguanli',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
           'title': '仓库管理',
@@ -1494,7 +1494,7 @@ export default [
       },
       {
         'path': 'tree_select_page',
-        'name': null,
+        'name': 'kailiaopeizhileixing',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
           'title': '开料配置类型',
@@ -1506,7 +1506,7 @@ export default [
       },
       {
         'path': 'tree_select_page',
-        'name': null,
+        'name': 'kailiaopeizhi',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
           'title': '开料配置',
@@ -1518,7 +1518,7 @@ export default [
       },
       {
         'path': 'tree_select_page',
-        'name': null,
+        'name': 'yonghushoufeikailiaopeizhi',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
           'title': '用户收费开料配置',

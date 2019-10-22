@@ -10,7 +10,7 @@
       </side-menu>
     </Sider>
     <div @click="closeMenu" :class="!collapsed?'close-menu':'close-menu-hide'"></div>
-    <Layout>
+    <Layout style="height: 100%">
       <Header class="header-con">
         <header-bar :collapsed="collapsed" @on-coll-change="handleCollapsedChange">
           <user :message-unread-count="unreadCount" :user-avatar="userAvatar"/>
@@ -24,11 +24,11 @@
           <div class="tag-nav-wrapper">
             <tags-nav :value="$route" @input="handleClick" :list="tagNavList" @on-close="handleCloseTag"/>
           </div>
-          <Content class="content-wrapper">
+          <Content class="content-wrapper" style="-webkit-overflow-scrolling: touch">
             <keep-alive :include="cacheList">
               <router-view/>
             </keep-alive>
-            <ABackTop :height="100" :bottom="80" :right="50" container=".content-wrapper"></ABackTop>
+            <ABackTop :height="100" :bottom="30" :right="30" container=".content-wrapper"></ABackTop>
           </Content>
         </Layout>
       </Content>

@@ -51,7 +51,7 @@
     <div style="text-align: center;margin: 0 0 15px 0">
       <Button type="primary" @click="search" icon="ios-search">搜索</Button>
     </div>
-    <Table :columns="logsCol" :data="logs">
+    <Table :columns="logsCol" :data="logs" class="logs-table">
       <template slot-scope="{ row, index }" slot="in_param">
         <div class="param-con" @mouseleave="outParamMouseLeave">
           <div class="param-msg" @mouseenter="outParamMouseEnter(row, 'in')">{{row.in_param}}</div>
@@ -69,8 +69,43 @@
         </div>
       </template>
     </Table>
+    <div class="logs-card">
+      <div v-for="log in logs" :key="log.log_id" class="logs-card-item">
+        <div>
+          <div class="log-name">用户</div>
+          <div class="log-value">{{log.login_name}}</div>
+        </div>
+        <div>
+          <div class="log-name">输入参数</div>
+          <div class="log-value" @click="logModal(log.in_param)">{{log.in_param}}</div>
+        </div>
+        <div>
+          <div class="log-name">访问路径</div>
+          <div class="log-value">{{log.url}}</div>
+        </div>
+        <div>
+          <div class="log-name">输出参数</div>
+          <div class="log-value" @click="logModal(log.out_param)">{{log.out_param}}</div>
+        </div>
+        <div>
+          <div class="log-name">IP地址</div>
+          <div class="log-value">{{log.ip}}</div>
+        </div>
+        <div>
+          <div class="log-name">操作时间</div>
+          <div class="log-value">{{log.create_date}}</div>
+        </div>
+      </div>
+    </div>
     <Page style="text-align: center;margin-top: 15px" v-show="count" :total="count" show-total :current="curr_page" @on-change="pageChange"
           :page-size="page_count"/>
+    <Modal
+        v-model="logModalShow"
+        title="参数格式化"
+        footer-hide
+        >
+      <div v-html="logModalHtml" class="json-con-modal"></div>
+    </Modal>
   </div>
 </template>
 
@@ -81,7 +116,8 @@ import Qs from 'qs'
 export default {
   data () {
     return {
-      value: '我要传值给子节点',
+      logModalShow: false,
+      logModalHtml: '',
       jsonData: '',
       curr_page: 1,
       page_count: 20,
@@ -159,7 +195,7 @@ export default {
       }
       this.logID = row.log_id + type
       let idx = row._index
-      if (idx > this.logs.length - 5 && idx > 5) {
+      if (idx > this.logs.length - 7 && idx > 5) {
         this.logMsgClass = { 'json-con': true, 'json-con-bottom': true }
       } else {
         this.logMsgClass = { 'json-con': true, 'json-con-top': true }
@@ -167,6 +203,13 @@ export default {
     },
     outParamMouseLeave: function () {
       this.logID = ''
+    },
+    cancel: function () {
+      this.logModalShow = false
+    },
+    logModal: function (val) {
+      this.logModalHtml = json_msg(val.replace(/[\r\n]/g, ''))
+      this.logModalShow = true
     }
   },
   mounted () {
@@ -228,7 +271,8 @@ export default {
     width: 400px;
   }
 
-  .json-con li {
+  .json-con li,
+  .json-con-modal li {
     list-style: none;
   }
 
@@ -271,6 +315,7 @@ export default {
   .string {
     color: #4e9a06;
     font-weight: bold;
+    word-break: break-all;
   }
 
   .symbol {
@@ -280,5 +325,42 @@ export default {
 
   .json-con ul {
     margin-left: 15px;
+  }
+
+  .logs-card {
+    display: none;
+  }
+
+  @media screen and (max-width: 768px) {
+    .logs-table {
+      display: none;
+    }
+
+    .logs-card {
+      display: block;
+    }
+
+    .logs-card-item {
+      border: 1px solid #ddd;
+      margin-bottom: 15px;
+      padding: 10px 0;
+    }
+
+    .log-name {
+      width: 70px;
+      text-align: right;
+      display: inline-block;
+      padding-right: 12px;
+      vertical-align: top;
+    }
+
+    .log-value {
+      width: ~'calc(100% - 80px)';
+      display: inline-block;
+      word-break: break-all;
+      vertical-align: top;
+      max-height: 60px;
+      overflow: auto;
+    }
   }
 </style>

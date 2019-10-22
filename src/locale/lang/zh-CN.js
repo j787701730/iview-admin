@@ -58,7 +58,7 @@ export default {
   'dianpuliebiao': '店铺列表',
   'hangyefenlei': '供应商分类',
   'xiaoguotuzhizuo': '效果图制作',
-  'cad用户关系': 'CAD用户关系',
+  'cadyonghuguanxi': 'CAD用户关系',
   'zizhishenhe': '资质审核',
   'shiwushangpinjiaoyi': '实物商品交易',
   'xunishangpinjiaoyi': '虚拟商品交易',
@@ -117,7 +117,8 @@ export default {
   'yuyinhecheng': '语音合成',
   'dingdanguanli': '订单管理',
   'shangpindingdan': '商品订单',
-  'null': '用户收费开料配置',
+  'kailiaopeizhileixing': '开料配置类型',
+  'yonghushoufeikailiaopeizhi': '用户收费开料配置',
   'changkudingdang': '仓库订单',
   'rizhiguanli': '日志管理',
   'ruanjianrizhi': '软件日志',
@@ -178,5 +179,8 @@ export default {
   'chenfengjinrong': '晨丰金融',
   'fegshoudai': '丰收贷',
   'jinrongpeizhi': '金融配置',
-  'jinrongmingxi': '金融明细'
+  'jinrongmingxi': '金融明细',
+  'gongyingshangfenlei': '供应商分类',
+  'cangkuguanli': '仓库管理',
+  'kailiaopeizhi': '开料配置'
 }
