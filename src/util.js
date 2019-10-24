@@ -19,7 +19,7 @@ export function ajax (url, data, toast = true, sucFun = null, failFun = null) {
       if (res.data.err_code === 0) {
         if (toast) {
           // Feedback.toast.success(res.data.err_msg)
-          Message.success({ content: res.data.err_msg })
+          Message.success({ content: typeof res.data.err_msg === 'string' ? res.data.err_msg : '请求成功' })
         }
         if (sucFun !== null) {
           sucFun(res.data)

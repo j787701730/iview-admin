@@ -1,0 +1,667 @@
+<template>
+  <div>
+    <Form :label-width="70" @submit.native.prevent="">
+      <Row>
+        <Col :xs="24" :sm="4" :md="6">
+          <FormItem label="店铺名称">
+            <Input v-model="param.shopName" @keydown.enter.native="search"></Input>
+          </FormItem>
+        </Col>
+        <Col :xs="24" :sm="4" :md="6">
+          <FormItem label="公司名称">
+            <Input v-model="param.company_name" @keydown.enter.native="search"></Input>
+          </FormItem>
+        </Col>
+        <Col :xs="24" :sm="4" :md="6">
+          <FormItem label="信用代码">
+            <Input v-model="param.tax_no" @keydown.enter.native="search"></Input>
+          </FormItem>
+        </Col>
+        <Col :xs="24" :sm="4" :md="6">
+          <FormItem label="创建时间">
+            <Row>
+              <Col span="11">
+                <FormItem style="width: 100%">
+                  <DatePicker type="date" style="width: 100%" v-model="param.timemin"></DatePicker>
+                </FormItem>
+              </Col>
+              <Col span="2" style="text-align: center">-</Col>
+              <Col span="11">
+                <FormItem style="width: 100%">
+                  <DatePicker type="date" style="width: 100%" v-model="param.timemax"></DatePicker>
+                </FormItem>
+              </Col>
+            </Row>
+          </FormItem>
+        </Col>
+        <Col :xs="24" :sm="4" :md="6">
+          <FormItem label="店铺地址">
+            <Row>
+              <Col span="8">
+                <FormItem style="width: 100%">
+                  <Select style="width:100%;" @on-change="shop_province_cg" placeholder="省">
+                    <Option v-for="(val,key) in shop_province" :value="key" :key="key">{{ val }}</Option>
+                  </Select>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <FormItem style="width: 100%">
+                  <Select v-model="shop_1" style="width:100%" @on-change="shop_city_cg" placeholder="市">
+                    <Option v-for="(val,key) in shop_city" :value="key" :key="key">{{ val }}</Option>
+                  </Select>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <FormItem style="width: 100%">
+                  <Select v-model="shop_2" style="width:100%" placeholder="区">
+                    <Option v-for="(val,key) in shop_region" :value="key" :key="key">{{ val }}</Option>
+                  </Select>
+                </FormItem>
+              </Col>
+            </Row>
+          </FormItem>
+        </Col>
+        <Col :xs="24" :sm="4" :md="6">
+          <FormItem label="服务地址">
+            <Row>
+              <Col span="8">
+                <FormItem style="width: 100%">
+                  <Select style="width:100%;" @on-change="service_province_cg" placeholder="省">
+                    <Option v-for="(val,key) in service_city_province" :value="key" :key="key">{{ val }}</Option>
+                  </Select>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <FormItem style="width: 100%">
+                  <Select v-model="service_1" style="width:100%" @on-change="service_city_cg" placeholder="市">
+                    <Option v-for="(val,key) in service_city" :value="key" :key="key">{{ val }}</Option>
+                  </Select>
+                </FormItem>
+              </Col>
+              <Col span="8">
+                <FormItem style="width: 100%">
+                  <Select v-model="service_2" style="width:100%" placeholder="区">
+                    <Option v-for="(val,key) in service_region" :value="key" :key="key">{{ val }}</Option>
+                  </Select>
+                </FormItem>
+              </Col>
+            </Row>
+          </FormItem>
+        </Col>
+      </Row>
+    </Form>
+    <div style="text-align: center;margin: 0 0 15px 0">
+      <Button type="primary" @click="search" icon="ios-search">搜索</Button>
+    </div>
+    <div style="margin-bottom: 10px;text-align: right">
+      <span style="vertical-align: middle">共 {{count}} 条</span>
+      <Page style="display: inline-block;vertical-align: middle" v-show="count" :total="count" show-total :current="param.page"
+            @on-change="pageChange"
+            :page-size="param.limit" simple/>
+    </div>
+    <Table :columns="logsCol" :data="logs" class="logs-table" @on-sort-change="orderBy">
+      <template slot-scope="{ row, index }" slot="role_id">
+        <div @click="roleManger(row)">
+          <template v-for="role in row.role_id.split(',')">
+            <div class="role-item" :title="roles[role].role_ch_name" :key="role">{{roles[role].role_ch_name}}</div>
+          </template>
+        </div>
+      </template>
+      <template slot-scope="{ row, index }" slot="login_name">
+        <span style="color: #2d8cf0;cursor: pointer" @click="openStaffModal(row)">{{row.login_name}}</span>
+      </template>
+
+      <template slot-scope="{ row, index }" slot="state">
+        <span style="padding: 3px 5px;background-color: #5cb85c;color: #fff">{{shop_state[row.state]}}</span>
+      </template>
+      <template slot-scope="{ row, index }" slot="option">
+        <Button v-if="Number(row.state) === -2" type="primary" @click="stateChange(row)" size="small">解冻</Button>
+        <Button v-else-if="Number(row.state) === 1 || Number(row.state) === -1" type="warning" @click="stateChange(row)" size="small">冻结
+        </Button>
+      </template>
+    </Table>
+    <div class="logs-table-m">
+      <div v-for="(row, index ) in logs" :key="row.shop_id" class="logs-card-item">
+        <div>
+          <div class="log-name">店铺名称</div>
+          <div class="log-value">{{row.shop_name}}</div>
+        </div>
+        <div>
+          <div class="log-name">店铺地址</div>
+          <div class="log-value">{{row.shop_address}}</div>
+        </div>
+        <div>
+          <div class="log-name">店铺角色</div>
+          <div class="log-value" @click="roleManger(row,index)">
+            <template v-for="role in row.role_id.split(',')">
+              <div class="role-item" :title="roles[role].role_ch_name" :key="role">{{roles[role].role_ch_name}}</div>&nbsp;
+            </template>
+          </div>
+        </div>
+        <div>
+          <div class="log-name">公司名称</div>
+          <div class="log-value" style="color: #2d8cf0;cursor: pointer" @click="openStaffModal(row)">{{row.login_name}}</div>
+        </div>
+        <div>
+          <div class="log-name">信用代码</div>
+          <div class="log-value">{{row.tax_no}}</div>
+        </div>
+        <div>
+          <div class="log-name">收藏次数</div>
+          <div class="log-value">{{row.collect_times}}</div>
+        </div>
+        <div>
+          <div class="log-name">创建时间</div>
+          <div class="log-value">{{row.create_date}}</div>
+        </div>
+        <div>
+          <div class="log-name">更新时间</div>
+          <div class="log-value">{{row.update_date}}</div>
+        </div>
+        <div>
+          <div class="log-name">状态</div>
+          <div class="log-value"><span style="padding: 3px 5px;background-color: #5cb85c;color: #fff">{{shop_state[row.state]}}</span></div>
+        </div>
+        <div style="margin-top: 6px;">
+          <div class="log-name">操作</div>
+          <div class="log-value">
+            <Button v-if="Number(row.state) === -2" type="primary" @click="stateChange(row, index)" size="small">解冻</Button>
+            <Button v-else-if="Number(row.state) === 1 || Number(row.state) === -1" type="warning" @click="stateChange(row, index)" size="small">
+              冻结
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <Page style="text-align: center;margin-top: 15px" v-show="count" :total="count" show-total :current="param.page"
+          @on-change="pageChange"
+          :page-size="param.limit"/>
+    <Modal
+        v-model="roleMangerShow"
+        title="权限管理"
+    >
+      <CheckboxGroup v-model="roleMangerData">
+        <template v-for="(data, k) in roles">
+          <Checkbox :title="data.comments" :key="k" :label="k">{{data.role_ch_name}}</Checkbox>
+        </template>
+      </CheckboxGroup>
+      <div slot="footer">
+        <Button type="default" @click="roleMangerShow=false">取消</Button>
+        <Button type="primary" @click="roleMangerOk">提交</Button>
+      </div>
+    </Modal>
+    <Modal
+        v-model="stateModalShow"
+        title="系统提示"
+        width=300
+    >
+      <p>{{stateMsg}}</p>
+      <div slot="footer">
+        <Button type="default" @click="stateModalShow=false">取消</Button>
+        <Button type="primary" @click="stateChangeOk">提交</Button>
+      </div>
+    </Modal>
+    <Modal
+        v-model="staffModalShow"
+        title="店铺员工"
+        footer-hide
+    >
+      <Table :columns="staffCol" :data="staffData.staff.data">
+        <template slot-scope="{ row, index }" slot="state">
+          <span>{{userState[row.state]}}</span>
+        </template>
+      </Table>
+      <Page style="text-align: center;margin-top: 15px" v-show="staffCount" :total="staffCount" show-total :current="param.curr_page"
+            @on-change="pageStaffChange"
+            :page-size="staffParam.page_count"/>
+    </Modal>
+  </div>
+</template>
+
+<script>
+
+import { ajax } from '@/util'
+import axios from 'axios'
+import Qs from 'qs'
+
+export default {
+  name: 'cs-logs',
+  data () {
+    return {
+      userState: {
+        0: '冻结',
+        1: '在用'
+      },
+      staffCount: 0,
+      stateMsg: '',
+      stateModalShow: false,
+      roleMangerShow: false,
+      roleMangerData: [],
+      selectRoleRow: '',
+      selectRoleIndex: '',
+      staffModalShow: false,
+      staffParam: {
+        curr_page: 1,
+        page_count: 10,
+        shop_id: ''
+      },
+      staffData: {
+        staff: {
+          data: []
+        }
+      },
+      shop_city_data: {
+        county: 1,
+        province: '',
+        city: ''
+      },
+      service_city_data: {
+        county: 1,
+        province: '',
+        city: ''
+      },
+      shop_province: {},
+      shop_city: {},
+      shop_region: {},
+      shop_1: '',
+      shop_2: '',
+      service_city_province: {},
+      service_city: {},
+      service_region: {},
+      service_1: '',
+      service_2: '',
+      shop_state: {
+        '-2': '被冻结',
+        '-1': '已打烊',
+        '0': '待审核',
+        '1': '营业中'
+      },
+      roles: {
+        '101': {
+          'role_id': '101',
+          'role_en_name': 'ROLE_TYPE_STORE',
+          'role_ch_name': '销售门店',
+          'can_apply': '1',
+          'comments': '提供全方位的销售定制门店',
+          'icon': 'icon-shopping-cart'
+        },
+        '102': {
+          'role_id': '102',
+          'role_en_name': 'ROLE_TYPE_SUPPLIER',
+          'role_ch_name': '供货商',
+          'can_apply': '1',
+          'comments': '提供五金建材的供货服务',
+          'icon': 'icon-truck'
+        },
+        '103': {
+          'role_id': '103',
+          'role_en_name': 'ROLE_TYPE_FACTORY',
+          'role_ch_name': '加工工厂',
+          'can_apply': '1',
+          'comments': '提供定价加工服务',
+          'icon': 'icon-gears'
+        },
+        '104': {
+          'role_id': '104',
+          'role_en_name': 'ROLE_TYPE_DESIGNER',
+          'role_ch_name': '设计师',
+          'can_apply': '1',
+          'comments': '提供设计、测量等服务',
+          'icon': 'icon-male'
+        },
+        '105': {
+          'role_id': '105',
+          'role_en_name': 'ROLE_TYPE_CONSTRUCTION',
+          'role_ch_name': '工程施工',
+          'can_apply': '1',
+          'comments': '提供上门施工服务',
+          'icon': 'icon-wrench'
+        }
+      },
+      order: '',
+      staffCol: [{
+        title: '职员名称',
+        key: 'login_name'
+      }, {
+        title: '所在部门',
+        key: 'department_name'
+      }, {
+        title: '职工状态',
+        slot: 'state',
+        key: 'state'
+      }, {
+        title: '创建时间',
+        key: 'register_time'
+      }],
+      param: {
+        limit: 20,
+        timemin: '',
+        timemax: '',
+        shopName: '',
+        company_name: '',
+        tax_no: '',
+        page: 1
+      },
+      count: 0,
+      logID: '',
+      logMsgClass: '',
+      logsCol: [{
+        title: '店铺名字',
+        key: 'shop_name'
+      }, {
+        title: '详细地址',
+        key: 'shop_address'
+      }, {
+        title: '店铺角色',
+        slot: 'role_id'
+      }, {
+        title: '店铺管理员',
+        slot: 'login_name',
+        key: 'login_name'
+      },
+      {
+        title: '公司名称',
+        key: 'company_name',
+        sortable: 'custom'
+      }, {
+        title: '统一信用代码',
+        key: 'tax_no',
+        sortable: 'custom'
+      }, {
+        title: '收藏次数',
+        key: 'collect_times',
+        sortable: 'custom'
+      }, {
+        title: '创建时间',
+        key: 'create_date',
+        sortable: 'custom'
+      }, {
+        title: '更新时间',
+        key: 'update_date',
+        sortable: 'custom'
+      }, {
+        title: '状态',
+        slot: 'state',
+        key: 'state',
+        sortable: 'custom'
+      },
+      {
+        title: '操作',
+        slot: 'option'
+      }],
+      logs: []
+    }
+  },
+  components: {},
+  methods: {
+    dateFormat: function (date) {
+      let d = new Date(date)
+      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()
+    },
+    search: function (e) {
+      e.target.blur()
+      this.param.page = 1
+      for (let o in this.param) {
+        if (this.param.hasOwnProperty(o)) {
+          if (this.param[o] && (o === 'timemin' || o === 'timemax')) {
+            this.param[o] = this.dateFormat(this.param[o])
+          }
+        }
+      }
+
+      if (Number(this.shop_city_data.province)) {
+        this.param.city = {}
+        this.param.city.province = this.shop_city_data.province
+        if (this.shop_1) {
+          this.param.city.city = this.shop_1
+        } else {
+          delete this.param.city.city
+        }
+        if (this.shop_2) {
+          this.param.city.region = this.shop_2
+        } else {
+          delete this.param.city.region
+        }
+      } else {
+        delete this.param.city
+      }
+
+      if (Number(this.service_city_data.province)) {
+        this.param.service_city = {}
+        this.param.service_city.province = this.service_city_data.province
+        if (this.service_1) {
+          this.param.service_city.city = this.service_1
+        } else {
+          delete this.param.service_city.city
+        }
+        if (this.service_2) {
+          this.param.service_city.region = this.service_2
+        } else {
+          delete this.param.service_city.region
+        }
+      } else {
+        delete this.param.service_city
+      }
+      this.getData()
+    },
+    getData: function () {
+      if (this.order && this.order.order && this.order.order !== 'normal') {
+        this.param.order = this.order.key + ' ' + this.order.order
+      } else {
+        delete this.param.order
+      }
+      this.$Loading.start()
+      ajax('/Adminrelas-ShopsManage-shopsList', Qs.stringify(this.param), true,
+        (data) => {
+          this.$Loading.finish()
+          this.logs = data.err_msg.data
+          this.count = Number(data.err_msg.num)
+        },
+        () => {
+          this.$Loading.finish()
+        })
+    },
+    pageChange: function (val) {
+      this.param.page = val
+      this.getData()
+    },
+    cancel: function () {
+      this.roleMangerShow = false
+    },
+    roleManger (row, index) {
+      this.roleMangerData = row.role_id.split(',')
+      this.selectRoleRow = row
+      this.selectRoleIndex = index !== undefined ? index : row._index
+      this.roleMangerShow = true
+    },
+    roleMangerOk: function () {
+      if (this.roleMangerData.length === 0) {
+        this.$Message.error('最少要选择一个店铺角色')
+      } else {
+        this.$Loading.start()
+        ajax('/Adminrelas-ShopsManage-editUserRoleRel', Qs.stringify({
+          uid: this.selectRoleRow.user_id,
+          role_id: this.roleMangerData
+        }), true,
+        (data) => {
+          this.$Loading.finish()
+          this.roleMangerShow = false
+          this.logs[this.selectRoleIndex].role_id = this.roleMangerData.join(',')
+        },
+        () => {
+          this.$Loading.finish()
+        })
+      }
+    },
+    orderBy: function ({ column, key, order }) {
+      this.order = {
+        key: key,
+        order: order
+      }
+      this.getData()
+    },
+    cityData: function (data, type, index) {
+      axios({
+        url: '/Home-Config-areaConfig',
+        method: 'post',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        data: Qs.stringify(data)
+      }).then((res) => {
+        res.data[0] = '请选择'
+        if (index === 0) {
+          this.service_city_province = res.data
+          this.shop_province = res.data
+        }
+        if (type === 'shop') {
+          if (index === 1) {
+            this.shop_city = res.data
+          } else if (index === 2) {
+            this.shop_region = res.data
+          }
+        } else if (type === 'service_city') {
+          if (index === 1) {
+            this.service_city = res.data
+          } else if (index === 2) {
+            this.service_region = res.data
+          }
+        }
+      })
+    },
+    shop_province_cg: function (val) {
+      if (val === 0) {
+        this.shop_city = {}
+        this.shop_region = {}
+        this.shop_1 = ''
+        this.shop_2 = ''
+      } else {
+        this.shop_city_data.province = val
+        this.cityData(this.shop_city_data, 'shop', 1)
+      }
+    },
+    shop_city_cg: function (val) {
+      if (val === 0) {
+        this.shop_region = {}
+        this.shop_2 = ''
+      } else {
+        this.shop_city_data.city = val
+        this.cityData(this.shop_city_data, 'shop', 2)
+      }
+    },
+    service_province_cg: function (val) {
+      if (val === 0) {
+        this.service_city = {}
+        this.service_region = {}
+        this.service_1 = ''
+        this.service_2 = ''
+      } else {
+        this.service_city_data.province = val
+        this.cityData(this.service_city_data, 'service_city', 1)
+      }
+    },
+    service_city_cg: function (val) {
+      if (val === 0) {
+        this.service_region = {}
+        this.service_2 = ''
+      } else {
+        this.service_city_data.city = val
+        this.cityData(this.service_city_data, 'service_city', 2)
+      }
+    },
+    stateChange: function (row, index) {
+      if (Number(row.state) === -2) {
+        this.stateMsg = '确认要解冻吗？'
+      } else {
+        this.stateMsg = '确认要冻结吗？'
+      }
+      this.selectRoleRow = row
+      this.selectRoleIndex = index !== undefined ? index : row._index
+      this.stateModalShow = true
+    },
+    stateChangeOk: function () {
+      ajax('/Adminrelas-ShopsManage-editShopState', Qs.stringify({
+        state: Number(this.selectRoleRow.state) === -2 ? 1 : -2,
+        shopId: this.selectRoleRow.shop_id
+      }), true,
+      (data) => {
+        this.logs[this.selectRoleIndex].state = Number(this.selectRoleRow.state) === -2 ? 1 : -2
+        this.stateModalShow = false
+      },
+      () => {
+      })
+    },
+    openStaffModal (row) {
+      this.selectRoleRow = row
+      this.staffParam.curr_page = 1
+      this.getShopUserStaff()
+    },
+    getShopUserStaff () {
+      this.staffParam.shop_id = this.selectRoleRow.shop_id
+      ajax('/Adminrelas-ShopsManage-getShopUserStaff', Qs.stringify(this.staffParam), true,
+        (data) => {
+          this.staffData = data.data
+          this.staffCount = Number(data.data.staff.count)
+          this.staffModalShow = true
+        },
+        () => {
+        })
+    },
+    pageStaffChange: function (val) {
+      this.staffParam.curr_page = val
+      this.getShopUserStaff()
+    }
+  },
+  mounted () {
+    this.getData()
+    this.cityData(this.shop_city_data, 'service_city', 0)
+  }
+}
+</script>
+
+<style lang="less">
+  .role-item {
+    padding: 2px 0;
+    color: #2d8cf0;
+    cursor: pointer;
+    display: inline-block;
+  }
+
+  .logs-table-m {
+    display: none;
+  }
+
+  @media screen and (max-width: 768px) {
+    .logs-table {
+      display: none;
+    }
+
+    .logs-table-m {
+      display: block;
+    }
+
+    .logs-card-item {
+      border: 1px solid #ddd;
+      margin-bottom: 15px;
+      padding: 10px 0;
+    }
+
+    .log-name {
+      width: 70px;
+      text-align: right;
+      display: inline-block;
+      padding-right: 12px;
+      vertical-align: top;
+    }
+
+    .log-value {
+      width: ~'calc(100% - 80px)';
+      display: inline-block;
+      word-break: break-all;
+      vertical-align: top;
+      max-height: 60px;
+      overflow: auto;
+    }
+  }
+</style>

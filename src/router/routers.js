@@ -239,7 +239,7 @@ export default [
     'component': Main,
     'children': [
       {
-        'path': 'tree_select_page',
+        'path': 'shops',
         'name': 'dianpuliebiao',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
@@ -248,7 +248,7 @@ export default [
             10
           ]
         },
-        'component': () => import('@/view/components/tree-select/index.vue')
+        'component': () => import('@/view/shops/list.vue')
       },
       {
         'path': 'tree_select_page',
@@ -1053,7 +1053,7 @@ export default [
     'component': Main,
     'children': [
       {
-        'path': 'tree_select_page',
+        'path': 'log',
         'name': 'ruanjianrizhi',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
@@ -1062,7 +1062,7 @@ export default [
             53
           ]
         },
-        'component': () => import('@/view/components/tree-select/index.vue')
+        'component': () => import('@/view/log/cs.vue')
       },
       {
         'path': 'tree_select_page',
