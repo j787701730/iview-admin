@@ -154,7 +154,7 @@
       <div style="height: 40px;overflow: auto;margin-top: 10px;border: 1px solid #ddd;padding: 0 6px">
         <template v-for="row in selectShopsData">
           <div class="shop-plugin-sel-item" :key="row.shop_id" :title="row.shop_name">{{row.shop_name}}
-            <Icon class="shop-plugin-sel-item-close" type="ios-close" @click="delSelect(row)"/>
+            <Icon class="shop-plugin-sel-item-close" type="ios-close" @click="rowClick(row)"/>
           </div>
         </template>
       </div>
@@ -409,12 +409,6 @@ export default {
         this.service_city_data.city = val
         this.cityData(this.service_city_data, 'service_city', 2)
       }
-    },
-    delSelect: function (row) {
-      let temp = JSON.parse(JSON.stringify(this.selectShopsData))
-      delete temp[row.shop_id]
-      this.selectShopsData = temp
-      this.checkAll()
     },
     rowClick: function (row) {
       let temp = JSON.parse(JSON.stringify(this.selectShopsData))
