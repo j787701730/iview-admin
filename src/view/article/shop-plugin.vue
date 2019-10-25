@@ -1,3 +1,48 @@
+<style lang="less" scoped>
+  .ivu-form-item {
+    margin-bottom: 10px;
+  }
+
+  .ivu-modal {
+    top: 50px;
+  }
+
+  .ivu-table-cell {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .ivu-checkbox-wrapper {
+    margin-right: 0;
+  }
+
+  .shop-plugin-sel-item {
+    display: inline-block;
+    margin: 6px 6px 6px 0;
+    max-width: 84px;
+    height: 26px;
+    line-height: 26px;
+    position: relative;
+    padding: 0 14px 0 6px;
+    vertical-align: top;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: keep-all;
+    border: 1px solid #eee;
+
+    .shop-plugin-sel-item-close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 12px;
+      line-height: 24px;
+      cursor: pointer;
+      background: #ddd;
+      color: #fff;
+    }
+  }
+</style>
 <template>
   <span>
     <span @click="shopPluginShow=true">
@@ -7,6 +52,7 @@
       v-model="shopPluginShow"
       title="店铺查询"
       width="800"
+      :mask-closable="false"
   >
     <div>
       <Form :label-width="70" @submit.native.prevent="">
@@ -89,15 +135,15 @@
         </Col>
       </Row>
     </Form>
-      <div style="text-align: center;margin: 0 0 15px 0">
+      <div style="text-align: center;margin: 0 0 10px 0">
       <Button type="primary" @click="search" icon="ios-search">搜索</Button>
     </div>
-<!--      <div style="margin-bottom: 10px;text-align: right">-->
-<!--      <span style="vertical-align: middle">共 {{count}} 条</span>-->
-<!--      <Page style="display: inline-block;vertical-align: middle" v-show="count" :total="count" show-total :current="param.currPage"-->
-<!--            @on-change="pageChange"-->
-<!--            :page-size="param.pageCount" simple/>-->
-<!--    </div>-->
+      <!--      <div style="margin-bottom: 10px;text-align: right">-->
+      <!--      <span style="vertical-align: middle">共 {{count}} 条</span>-->
+      <!--      <Page style="display: inline-block;vertical-align: middle" v-show="count" :total="count" show-total :current="param.currPage"-->
+      <!--            @on-change="pageChange"-->
+      <!--            :page-size="param.pageCount" simple/>-->
+      <!--    </div>-->
       <Table :columns="shopsDataCol" :data="shopsData" :row-key="Number(this.shopCount) > 1">
         <template slot-scope="{ row, index }" slot="area">
         <span>{{row.province_name}} {{row.city_name}} {{row.region_name}}</span>
@@ -105,7 +151,7 @@
       </Table>
       <Page style="text-align: center;margin-top: 15px" v-show="count" :total="count" show-total :current="param.currPage"
             @on-change="pageChange" :page-size="param.pageCount"/>
-      <div style="height: 40px;overflow: auto">
+      <div style="height: 40px;overflow: auto;margin-top: 10px;border: 1px solid #ddd;padding: 0 6px">
         <template v-for="row in selectShopsData">
           <div class="shop-plugin-sel-item" :key="row.shop_id" :title="row.shop_name">{{row.shop_name}}
             <Icon class="shop-plugin-sel-item-close" type="ios-close" @click="delSelect(row)"/>
@@ -192,7 +238,7 @@ export default {
       count: 0,
       isAllSelect: false,
       shopsDataCol: [{
-        width: 64,
+        width: 34,
         render: (h, params) => {
           return Number(this.shopCount) === 0 || Number(this.shopCount) > 1 ? h('Checkbox', {
             props: {
@@ -205,10 +251,8 @@ export default {
                   temp[params.row.shop_id] = params.row
                   if (Number(this.shopCount) !== 0 && Object.keys(this.selectShopsData).length === Number(this.shopCount)) {
                     this.$Message.error(`最多只能选择${this.shopCount}家店铺`)
-                    let row = params.row
-                    row.checked = false
-                    // row.aaaaa = (new Date()).getMilliseconds()
-                    this.$set(this.shopsData, params.index, row)
+                    params.row.checked = false
+                    this.$set(this.shopsData, params.index, params.row)
                     return
                   }
                   for (let item of this.shopsData) {
@@ -267,9 +311,7 @@ export default {
                 this.isAllSelect = val
               }
             }
-          }, '') : h('span', {
-
-          }, '')
+          }, '') : h('span', {}, '')
         }
       }, {
         title: '店铺名称',
@@ -295,13 +337,6 @@ export default {
     search: function (e) {
       e.target.blur()
       this.param.currPage = 1
-      // for (let o in this.param) {
-      //   if (this.param.hasOwnProperty(o)) {
-      //     if (this.param[o] && (o === 'timemin' || o === 'timemax')) {
-      //       this.param[o] = this.dateFormat(this.param[o])
-      //     }
-      //   }
-      // }
       this.param.province = Number(this.shop_city_data.province) || ''
       this.param.city = Number(this.shop_1) || ''
       this.param.region = Number(this.shop_2) || ''
@@ -459,30 +494,3 @@ export default {
   }
 }
 </script>
-
-<style lang="less">
-.shop-plugin-sel-item{
-  display: inline-block;
-  margin:0 6px 6px 0;
-  max-width: 80px;
-  height: 28px;
-  line-height: 28px;
-  position: relative;
-  padding: 0 10px;
-  vertical-align: top;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: normal;
-  word-break: break-all;
-  .shop-plugin-sel-item-close{
-    position: absolute;
-    top:0;
-    right:0;
-    line-height: 28px;
-    width: 10px;
-    cursor: pointer;
-    background: #2d8cf0;
-    color: white;
-  }
-}
-</style>

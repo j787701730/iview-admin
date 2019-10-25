@@ -1,11 +1,35 @@
-<!--<style lang="less">-->
-<!--    @import "./login.less";-->
-<!--</style>-->
+<style lang="less" scoped>
+  .shop-plugin-sel-item{
+    display: inline-block;
+    margin:6px 6px 6px 0;
+    max-width: 84px;
+    height: 26px;
+    line-height: 26px;
+    position: relative;
+    padding: 0 14px 0 6px;
+    vertical-align: top;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: keep-all;
+    border: 1px solid #eee;
+    .shop-plugin-sel-item-close{
+      position: absolute;
+      top:0;
+      right:0;
+      width: 12px;
+      line-height: 24px;
+      cursor: pointer;
+      background: #ddd;
+      color: #fff;
+    }
+  }
+</style>
 
 <template>
   <div>
     <h1 style="margin-bottom: 10px;">文章列表</h1>
-    <ShopPlugin shopCount="3" :shopData="selectShopsData" @send="getShopData">
+    <ShopPlugin shopCount="10" :shopData="selectShopsData" @send="getShopData">
       <Button type="error">点击</Button>
     </ShopPlugin>
     <div style="">
@@ -45,30 +69,3 @@ export default {
   }
 }
 </script>
-
-<style lang="less">
-  .shop-plugin-sel-item{
-    display: inline-block;
-    margin:0 6px 6px 0;
-    max-width: 80px;
-    height: 28px;
-    line-height: 28px;
-    position: relative;
-    padding: 0 10px;
-    vertical-align: top;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal;
-    word-break: break-all;
-    .shop-plugin-sel-item-close{
-      position: absolute;
-      top:0;
-      right:0;
-      line-height: 28px;
-      width: 10px;
-      cursor: pointer;
-      background: #2d8cf0;
-      color: white;
-    }
-  }
-</style>
