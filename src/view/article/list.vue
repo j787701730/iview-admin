@@ -29,7 +29,7 @@
 <template>
   <div>
     <h1 style="margin-bottom: 10px;">文章列表</h1>
-    <ShopPlugin shopCount="10" :shopData="selectShopsData" @send="getShopData">
+    <ShopPlugin shopCount="3" :shopData="selectShopsData" @send="getShopData">
       <Button type="error">点击</Button>
     </ShopPlugin>
     <div style="">

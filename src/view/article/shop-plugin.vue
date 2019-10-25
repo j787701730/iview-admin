@@ -144,7 +144,7 @@
       <!--            @on-change="pageChange"-->
       <!--            :page-size="param.pageCount" simple/>-->
       <!--    </div>-->
-      <Table :columns="shopsDataCol" :data="shopsData" :row-key="Number(this.shopCount) > 1">
+      <Table :columns="shopsDataCol" :data="shopsData" @on-row-click="rowClick">
         <template slot-scope="{ row, index }" slot="area">
         <span>{{row.province_name}} {{row.city_name}} {{row.region_name}}</span>
       </template>
@@ -242,52 +242,11 @@ export default {
         render: (h, params) => {
           return Number(this.shopCount) === 0 || Number(this.shopCount) > 1 ? h('Checkbox', {
             props: {
-              value: params.row.checked
-            },
-            on: {
-              'on-change': (val) => {
-                let temp = JSON.parse(JSON.stringify(this.selectShopsData))
-                if (val) {
-                  temp[params.row.shop_id] = params.row
-                  if (Number(this.shopCount) !== 0 && Object.keys(this.selectShopsData).length === Number(this.shopCount)) {
-                    this.$Message.error(`最多只能选择${this.shopCount}家店铺`)
-                    params.row.checked = false
-                    this.$set(this.shopsData, params.index, params.row)
-                    return
-                  }
-                  for (let item of this.shopsData) {
-                    if (!item.checked) {
-                      this.isAllSelect = false
-                      break
-                    }
-                    if (this.shopsData.indexOf(item) === this.shopsData.length - 1) {
-                      this.isAllSelect = true
-                    }
-                  }
-                } else {
-                  this.isAllSelect = false
-                  delete temp[params.row.shop_id]
-                }
-                this.selectShopsData = temp
-                this.shopsData[params.index].checked = val
-              }
+              value: Object.keys(this.selectShopsData).indexOf(params.row.shop_id) > -1
             }
           }, '') : h('Radio', {
             props: {
-              value: params.row.checked
-            },
-            on: {
-              'on-change': (val) => {
-                if (val) {
-                  let temp = JSON.parse(JSON.stringify(this.shopsData))
-                  for (let item of temp) {
-                    item.checked = item.shop_id === params.row.shop_id
-                  }
-                  this.shopsData = temp
-                  this.selectShopsData = {}
-                  this.selectShopsData[params.row.shop_id] = params.row
-                }
-              }
+              value: Object.keys(this.selectShopsData).indexOf(params.row.shop_id) > -1
             }
           }, '')
         },
@@ -298,16 +257,15 @@ export default {
             },
             on: {
               'on-change': (val) => {
-                let temp = JSON.parse(JSON.stringify(this.shopsData))
-                for (let item of temp) {
-                  item.checked = val
+                let temp = JSON.parse(JSON.stringify(this.selectShopsData))
+                for (let item of this.shopsData) {
                   if (val) {
-                    this.selectShopsData[item.shop_id] = item
+                    temp[item.shop_id] = item
                   } else {
-                    delete this.selectShopsData[item.shop_id]
+                    delete temp[item.shop_id]
                   }
                 }
-                this.shopsData = temp
+                this.selectShopsData = temp
                 this.isAllSelect = val
               }
             }
@@ -345,6 +303,15 @@ export default {
       this.param.service_region = Number(this.service_2) || ''
       this.getData()
     },
+    checkAll: function () {
+      let count = 0
+      for (const shop of this.shopsData) {
+        if (this.selectShopsData[shop.shop_id]) {
+          count += 1
+        }
+      }
+      this.isAllSelect = count === this.shopsData.length
+    },
     getData: function () {
       if (this.order && this.order.order && this.order.order !== 'normal') {
         this.param.order = this.order.key + ' ' + this.order.order
@@ -355,16 +322,9 @@ export default {
       ajax('/Adminrelas-CrmSearch-fetchShop', Qs.stringify(this.param), true,
         (data) => {
           this.$Loading.finish()
-          let count = 0
-          for (const shop of data.shop) {
-            if (this.selectShopsData[shop.shop_id]) {
-              shop.checked = true
-              count += 1
-            }
-          }
-          this.isAllSelect = count === data.shop.length
           this.shopsData = data.shop
           this.count = Number(data.shopCount)
+          this.checkAll()
         },
         () => {
           this.$Loading.finish()
@@ -373,9 +333,6 @@ export default {
     pageChange: function (val) {
       this.param.currPage = val
       this.getData()
-    },
-    cancel: function () {
-      this.roleMangerShow = false
     },
     orderBy: function ({ column, key, order }) {
       this.order = {
@@ -457,18 +414,25 @@ export default {
       let temp = JSON.parse(JSON.stringify(this.selectShopsData))
       delete temp[row.shop_id]
       this.selectShopsData = temp
-      let count = 0
-      let temp2 = JSON.parse(JSON.stringify(this.shopsData))
-      for (const shop of temp2) {
-        if (this.selectShopsData[shop.shop_id]) {
-          shop.checked = true
-          count += 1
+      this.checkAll()
+    },
+    rowClick: function (row) {
+      let temp = JSON.parse(JSON.stringify(this.selectShopsData))
+      if (Object.keys(temp).indexOf(row.shop_id) > -1) {
+        delete temp[row.shop_id]
+      } else {
+        if (Number(this.shopCount) > 1 && Object.keys(this.selectShopsData).length === Number(this.shopCount)) {
+          this.$Message.error(`最多只能选择${this.shopCount}家店铺`)
+          return
+        } else if (Number(this.shopCount) === 1) {
+          temp = {}
+          temp[row.shop_id] = row
         } else {
-          shop.checked = false
+          temp[row.shop_id] = row
         }
       }
-      this.shopsData = temp2
-      this.isAllSelect = count === this.shopsData.length
+      this.selectShopsData = temp
+      this.checkAll()
     }
   },
   mounted () {
@@ -478,18 +442,7 @@ export default {
   watch: {
     shopData (newVal) {
       this.selectShopsData = newVal
-      let count = 0
-      let temp = JSON.parse(JSON.stringify(this.shopsData))
-      for (const shop of temp) {
-        if (this.selectShopsData[shop.shop_id]) {
-          shop.checked = true
-          count += 1
-        } else {
-          shop.checked = false
-        }
-      }
-      this.isAllSelect = count === temp.length
-      this.shopsData = temp
+      this.checkAll()
     }
   }
 }
