@@ -1,5 +1,9 @@
 <style lang="less" scoped>
   .ivu-form-item {
+    margin-bottom: 0;
+  }
+
+  .shop-plugin-search-item{
     margin-bottom: 10px;
   }
 
@@ -40,6 +44,9 @@
       cursor: pointer;
       background: #ddd;
       color: #fff;
+      &:hover{
+        background: #ed4014;
+      }
     }
   }
 </style>
@@ -57,81 +64,33 @@
     <div>
       <Form :label-width="70" @submit.native.prevent="">
       <Row>
-        <Col :xs="24" :sm="11" :md="12">
+        <Col :xs="24" :sm="11" :md="12" class="shop-plugin-search-item">
           <FormItem label="用户名">
             <Input v-model="param.login_name" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="11" :md="12">
+        <Col :xs="24" :sm="11" :md="12" class="shop-plugin-search-item">
           <FormItem label="手机">
             <Input v-model="param.user_phone" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="11" :md="12">
+        <Col :xs="24" :sm="11" :md="12" class="shop-plugin-search-item">
           <FormItem label="店铺名称">
             <Input v-model="param.shopName" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="11" :md="12">
+        <Col :xs="24" :sm="11" :md="12" class="shop-plugin-search-item">
           <FormItem label="服务类型" style="width: 100%">
             <Select style="width:100%;" v-model="selectServiceType" placeholder="">
               <Option v-for="(val,key) in serviceType" :value="key" :key="key">{{ val }}</Option>
             </Select>
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="11" :md="12">
-          <FormItem label="店铺地址">
-            <Row>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select style="width:100%;" @on-change="shop_province_cg" placeholder="省">
-                    <Option v-for="(val,key) in shop_province" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="shop_1" style="width:100%" @on-change="shop_city_cg" placeholder="市">
-                    <Option v-for="(val,key) in shop_city" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="shop_2" style="width:100%" placeholder="区">
-                    <Option v-for="(val,key) in shop_region" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-            </Row>
-          </FormItem>
+        <Col :xs="24" :sm="11" :md="12" class="shop-plugin-search-item">
+          <CitySelectPlugin label="店铺地址" :areaObj="shop_city_data" @send="getShopAreaData"></CitySelectPlugin>
         </Col>
-        <Col :xs="24" :sm="11" :md="12">
-          <FormItem label="服务地址">
-            <Row>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select style="width:100%;" @on-change="service_province_cg" placeholder="省">
-                    <Option v-for="(val,key) in service_city_province" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="service_1" style="width:100%" @on-change="service_city_cg" placeholder="市">
-                    <Option v-for="(val,key) in service_city" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="service_2" style="width:100%" placeholder="区">
-                    <Option v-for="(val,key) in service_region" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-            </Row>
-          </FormItem>
+        <Col :xs="24" :sm="11" :md="12" class="shop-plugin-search-item">
+          <CitySelectPlugin label="服务地址" :areaObj="service_city_data" @send="getAreaData"></CitySelectPlugin>
         </Col>
       </Row>
     </Form>
@@ -169,14 +128,18 @@
 
 <script>
 import { ajax } from '@/util'
-import axios from 'axios'
 import Qs from 'qs'
+import CitySelectPlugin from '@/view/components/city_select_plugin'
 
 export default {
   name: 'shop-plugin',
   props: {
-    shopCount: {}, // 0 无限选, 1单选 , 剩下个数限制,
+    shopCount: {
+      type: [Number, String],
+      default: 0
+    }, // 0 无限选, 1单选 , 剩下个数限制,
     shopData: {
+      type: Object,
       default: function () {
         return {}
       }
@@ -184,7 +147,7 @@ export default {
   },
   data () {
     return {
-      selectShopsData: this.shopData,
+      selectShopsData: JSON.parse(JSON.stringify(this.shopData)),
       shopPluginShow: false,
       serviceType: {
         0: '全部',
@@ -199,26 +162,16 @@ export default {
       selectServiceType: '0',
       selectRoleRow: '',
       selectRoleIndex: '',
-      shop_city_data: {
-        county: 1,
-        province: '',
-        city: ''
-      },
       service_city_data: {
-        county: 1,
         province: '',
-        city: ''
+        city: '',
+        region: ''
       },
-      shop_province: {},
-      shop_city: {},
-      shop_region: {},
-      shop_1: '',
-      shop_2: '',
-      service_city_province: {},
-      service_city: {},
-      service_region: {},
-      service_1: '',
-      service_2: '',
+      shop_city_data: {
+        province: '',
+        city: '',
+        region: ''
+      },
       order: '',
       param: {
         shopName: '',
@@ -242,11 +195,11 @@ export default {
         render: (h, params) => {
           return Number(this.shopCount) === 0 || Number(this.shopCount) > 1 ? h('Checkbox', {
             props: {
-              value: Object.keys(this.selectShopsData).indexOf(params.row.shop_id) > -1
+              value: !!this.selectShopsData[params.row.shop_id]
             }
           }, '') : h('Radio', {
             props: {
-              value: Object.keys(this.selectShopsData).indexOf(params.row.shop_id) > -1
+              value: !!this.selectShopsData[params.row.shop_id]
             }
           }, '')
         },
@@ -287,20 +240,29 @@ export default {
       shopsData: []
     }
   },
+  components: {
+    CitySelectPlugin
+  },
   methods: {
     shopPluginOk: function () {
       this.$emit('send', this.selectShopsData)
       this.shopPluginShow = false
     },
+    getShopAreaData: function (val) {
+      this.shop_city_data = JSON.parse(JSON.stringify(val))
+    },
+    getAreaData: function (val) {
+      this.service_city_data = JSON.parse(JSON.stringify(val))
+    },
     search: function (e) {
       e.target.blur()
       this.param.currPage = 1
       this.param.province = Number(this.shop_city_data.province) || ''
-      this.param.city = Number(this.shop_1) || ''
-      this.param.region = Number(this.shop_2) || ''
+      this.param.city = Number(this.shop_city_data.city) || ''
+      this.param.region = Number(this.shop_city_data.region) || ''
       this.param.service_province = Number(this.service_city_data.province) || ''
-      this.param.service_city = Number(this.service_1) || ''
-      this.param.service_region = Number(this.service_2) || ''
+      this.param.service_city = Number(this.service_city_data.city) || ''
+      this.param.service_region = Number(this.service_city_data.region) || ''
       this.getData()
     },
     checkAll: function () {
@@ -322,7 +284,7 @@ export default {
       ajax('/Adminrelas-CrmSearch-fetchShop', Qs.stringify(this.param), true,
         (data) => {
           this.$Loading.finish()
-          this.shopsData = data.shop
+          this.shopsData = data.shop ? data.shop : []
           this.count = Number(data.shopCount)
           this.checkAll()
         },
@@ -341,101 +303,29 @@ export default {
       }
       this.getData()
     },
-    cityData: function (data, type, index) {
-      axios({
-        url: '/Home-Config-areaConfig',
-        method: 'post',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        data: Qs.stringify(data)
-      }).then((res) => {
-        res.data[0] = '请选择'
-        if (index === 0) {
-          this.service_city_province = res.data
-          this.shop_province = res.data
-        }
-        if (type === 'shop') {
-          if (index === 1) {
-            this.shop_city = res.data
-          } else if (index === 2) {
-            this.shop_region = res.data
-          }
-        } else if (type === 'service_city') {
-          if (index === 1) {
-            this.service_city = res.data
-          } else if (index === 2) {
-            this.service_region = res.data
-          }
-        }
-      })
-    },
-    shop_province_cg: function (val) {
-      if (val === 0) {
-        this.shop_city = {}
-        this.shop_region = {}
-        this.shop_1 = ''
-        this.shop_2 = ''
-      } else {
-        this.shop_city_data.province = val
-        this.cityData(this.shop_city_data, 'shop', 1)
-      }
-    },
-    shop_city_cg: function (val) {
-      if (val === 0) {
-        this.shop_region = {}
-        this.shop_2 = ''
-      } else {
-        this.shop_city_data.city = val
-        this.cityData(this.shop_city_data, 'shop', 2)
-      }
-    },
-    service_province_cg: function (val) {
-      if (val === 0) {
-        this.service_city = {}
-        this.service_region = {}
-        this.service_1 = ''
-        this.service_2 = ''
-      } else {
-        this.service_city_data.province = val
-        this.cityData(this.service_city_data, 'service_city', 1)
-      }
-    },
-    service_city_cg: function (val) {
-      if (val === 0) {
-        this.service_region = {}
-        this.service_2 = ''
-      } else {
-        this.service_city_data.city = val
-        this.cityData(this.service_city_data, 'service_city', 2)
-      }
-    },
     rowClick: function (row) {
-      let temp = JSON.parse(JSON.stringify(this.selectShopsData))
-      if (Object.keys(temp).indexOf(row.shop_id) > -1) {
-        delete temp[row.shop_id]
+      if (this.selectShopsData[row.shop_id]) {
+        this.$delete(this.selectShopsData, row.shop_id)
       } else {
         if (Number(this.shopCount) > 1 && Object.keys(this.selectShopsData).length === Number(this.shopCount)) {
           this.$Message.error(`最多只能选择${this.shopCount}家店铺`)
           return
         } else if (Number(this.shopCount) === 1) {
-          temp = {}
-          temp[row.shop_id] = row
+          this.selectShopsData = {}
+          this.$set(this.selectShopsData, row.shop_id, row)
         } else {
-          temp[row.shop_id] = row
+          this.$set(this.selectShopsData, row.shop_id, row)
         }
       }
-      this.selectShopsData = temp
       this.checkAll()
     }
   },
   mounted () {
-    this.cityData(this.shop_city_data, 'service_city', 0)
     this.getData()
   },
   watch: {
     shopData (newVal) {
-      this.selectShopsData = newVal
+      this.selectShopsData = JSON.parse(JSON.stringify(newVal))
       this.checkAll()
     }
   }
