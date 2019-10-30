@@ -3,7 +3,7 @@
     margin-bottom: 0;
   }
 
-  .shop-plugin-search-item{
+  .shop-plugin-search-item {
     margin-bottom: 10px;
   }
 
@@ -44,7 +44,8 @@
       cursor: pointer;
       background: #ddd;
       color: #fff;
-      &:hover{
+
+      &:hover {
         background: #ed4014;
       }
     }
@@ -195,7 +196,8 @@ export default {
         render: (h, params) => {
           return Number(this.shopCount) === 0 || Number(this.shopCount) > 1 ? h('Checkbox', {
             props: {
-              value: !!this.selectShopsData[params.row.shop_id]
+              value: !!this.selectShopsData[params.row.shop_id],
+              disabled: !this.selectShopsData[params.row.shop_id] && Object.keys(this.selectShopsData).length === Number(this.shopCount) && Number(this.shopCount) > 1
             }
           }, '') : h('Radio', {
             props: {
