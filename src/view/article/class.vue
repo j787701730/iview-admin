@@ -1,8 +1,18 @@
+<style scoped lang="less">
+  /deep/ .ivu-table .xxxx {
+    border-right: 0 solid #fff;
+  }
+</style>
 <template>
   <div>
     <h1>文章栏目</h1>
     <div style="height: 10px"></div>
-    <Table :columns="columns10" :data="data9" border></Table>
+    <Table :columns="columns10" :data="data9" border>
+      <template slot="option" slot-scope="{ row, index }">
+        <Button @click="option(row, index)">详情</Button>
+      </template>
+
+    </Table>
     <div style="height: 15px"></div>
     <Table :columns="columns" :data="data">
       <template slot-scope="{ row, index }" slot="name">
@@ -49,17 +59,6 @@ export default {
     return {
       columns10: [
         {
-          type: 'expand',
-          width: 50,
-          render: (h, params) => {
-            return h(expandRow, {
-              props: {
-                row: params.row
-              }
-            })
-          }
-        },
-        {
           title: 'Name',
           key: 'name',
           width: 100,
@@ -74,6 +73,21 @@ export default {
         {
           title: 'Address',
           key: 'address'
+        }, {
+          title: 'option',
+          key: 'option',
+          slot: 'option',
+          className: 'xxxx'
+        }, {
+          type: 'expand',
+          width: 1,
+          render: (h, params) => {
+            return h(expandRow, {
+              props: {
+                row: params.row
+              }
+            })
+          }
         }
       ],
       data9: [
@@ -213,6 +227,9 @@ export default {
     },
     docClick: function () {
       this.editIndex = -1
+    },
+    option: function (row, index) {
+      this.$set(this.data9[index], '_expanded', !row._expanded)
     }
   },
   mounted () {
