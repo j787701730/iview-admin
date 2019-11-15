@@ -1531,7 +1531,7 @@ export default [
     ]
   },
   {
-    'path': '/components',
+    'path': '/invoice',
     'name': 'fapiaoguanli',
     'meta': {
       'icon': 'logo-buffer',
@@ -1543,7 +1543,7 @@ export default [
     'component': Main,
     'children': [
       {
-        'path': 'tree_select_page',
+        'path': 'list',
         'name': 'kaipiaoguanli',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
@@ -1552,7 +1552,7 @@ export default [
             91
           ]
         },
-        'component': () => import('@/view/components/tree-select/index.vue')
+        'component': () => import('@/view/invoice/list.vue')
       },
       {
         'path': 'tree_select_page',
