@@ -102,13 +102,13 @@
             <Row>
               <Col span="11">
                 <FormItem style="width: 100%">
-                  <Input @keydown.enter.native="search" v-model="searchData.amount_min"></Input>
+                  <Input @keydown.enter.native="search" v-model="searchData.amount_min" @on-change="amountChange('min')"></Input>
                 </FormItem>
               </Col>
               <Col span="2" style="text-align: center">-</Col>
               <Col span="11">
                 <FormItem style="width: 100%">
-                  <Input @keydown.enter.native="search" v-model="searchData.amount_max"></Input>
+                  <Input @keydown.enter.native="search" v-model="searchData.amount_max" @on-change="amountChange"></Input>
                 </FormItem>
               </Col>
             </Row>
@@ -224,7 +224,7 @@
           <span style="font-weight: bold">邮箱：</span>
           <span>{{selectRowDetail.invoice_info.mail}}</span>
         </Col>
-        <Col :xs=24 :sm=12>
+        <Col :xs=24 :sm=24>
           <span style="font-weight: bold">收件地址：</span>
           <span>{{selectRowDetail.invoice_info.addr}}</span>
         </Col>
@@ -260,7 +260,7 @@
 </template>
 
 <script>
-import { ajax } from '@/util'
+import { ajax, clearNoNum, dateFormat } from '@/util'
 import Qs from 'qs'
 
 export default {
@@ -300,7 +300,9 @@ export default {
         create_date_min: '',
         create_date_max: '',
         invoice_state: '0',
-        issue_user: ''
+        issue_user: '',
+        amount_min: '',
+        amount_max: ''
       },
       acctItemCol: [{
         title: '名称',
@@ -343,6 +345,8 @@ export default {
         key: 'comments'
       }, {
         title: '操作',
+        width: 70,
+        align: 'center',
         key: 'option',
         slot: 'option'
       }],
@@ -351,14 +355,6 @@ export default {
   },
   components: {},
   methods: {
-    dateFormat: function (date) {
-      let d = new Date(date)
-      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()
-    },
-    datetimeFormat: function (date) {
-      let d = new Date(date)
-      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getMinutes()
-    },
     search: function (e) {
       e.target.blur()
       this.param.curr_page = 1
@@ -366,9 +362,9 @@ export default {
         if (this.searchData.hasOwnProperty(o)) {
           if (this.searchData[o]) {
             if (o === 'create_date_min' || o === 'create_date_max') {
-              this.param[o] = this.dateFormat(this.searchData[o])
+              this.param[o] = dateFormat(this.searchData[o])
             } else if (o === 'issue_date_min' || o === 'issue_date_max') {
-              this.param[o] = this.datetimeFormat(this.searchData[o])
+              this.param[o] = dateFormat(this.searchData[o], 'datetime')
             } else {
               this.param[o] = this.searchData[o]
             }
@@ -421,6 +417,16 @@ export default {
     drawInvoiceAjax: function () {
       this.drawInvoice.invoice_id = this.selectRow.invoice_id
       console.log(this.drawInvoice)
+    },
+    amountChange: function (type) {
+      let ths = this
+      setTimeout(function () {
+        if (type === 'min') {
+          ths.$set(ths.searchData, 'amount_min', clearNoNum(ths.searchData.amount_min))
+        } else {
+          ths.$set(ths.searchData, 'amount_max', clearNoNum(ths.searchData.amount_max))
+        }
+      }, 100)
     }
   },
   mounted () {

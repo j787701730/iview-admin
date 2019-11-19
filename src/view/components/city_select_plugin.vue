@@ -27,7 +27,8 @@
 </template>
 
 <script>
-import axios from 'axios'
+
+import { ajaxSimple } from '@/util'
 import Qs from 'qs'
 export default {
   name: 'city_select_plugin',
@@ -64,24 +65,17 @@ export default {
   },
   methods: {
     cityData: function (index) {
-      axios({
-        url: '/Home-Config-areaConfig',
-        method: 'post',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        data: Qs.stringify(this.service_city_data)
-      }).then((res) => {
-        res.data[0] = '请选择'
+      ajaxSimple('/Home-Config-areaConfig', Qs.stringify(this.service_city_data), (data) => {
+        data[0] = '请选择'
         if (index === 0) {
-          this.service_city_province = res.data
+          this.service_city_province = data
           this.service_city = {}
           this.service_region = {}
         } else if (index === 1) {
-          this.service_city = res.data
+          this.service_city = data
           this.service_region = {}
         } else if (index === 2) {
-          this.service_region = res.data
+          this.service_region = data
         }
       })
     },

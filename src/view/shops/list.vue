@@ -19,74 +19,27 @@
         </Col>
         <Col :xs="24" :sm="4" :md="6">
           <FormItem label="创建时间">
-            <Row>
-              <Col span="11">
-                <FormItem style="width: 100%">
-                  <DatePicker type="date" style="width: 100%" v-model="param.timemin"></DatePicker>
-                </FormItem>
-              </Col>
-              <Col span="2" style="text-align: center">-</Col>
-              <Col span="11">
-                <FormItem style="width: 100%">
-                  <DatePicker type="date" style="width: 100%" v-model="param.timemax"></DatePicker>
-                </FormItem>
-              </Col>
-            </Row>
+            <date_plugin :dateType="dateType" @send="getDatePlugin"></date_plugin>
+<!--            <Row>-->
+<!--              <Col span="11">-->
+<!--                <FormItem style="width: 100%">-->
+<!--                  <DatePicker type="date" style="width: 100%" :options="timeminOptions" v-model="param.timemin"></DatePicker>-->
+<!--                </FormItem>-->
+<!--              </Col>-->
+<!--              <Col span="2" style="text-align: center">-</Col>-->
+<!--              <Col span="11">-->
+<!--                <FormItem style="width: 100%">-->
+<!--                  <DatePicker type="date" style="width: 100%" :options="timemaxOptions" v-model="param.timemax"></DatePicker>-->
+<!--                </FormItem>-->
+<!--              </Col>-->
+<!--            </Row>-->
           </FormItem>
         </Col>
         <Col :xs="24" :sm="4" :md="6">
-          <FormItem label="店铺地址">
-            <Row>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select style="width:100%;" @on-change="shop_province_cg" placeholder="省">
-                    <Option v-for="(val,key) in shop_province" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="shop_1" style="width:100%" @on-change="shop_city_cg" placeholder="市">
-                    <Option v-for="(val,key) in shop_city" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="shop_2" style="width:100%" placeholder="区">
-                    <Option v-for="(val,key) in shop_region" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-            </Row>
-          </FormItem>
+          <city_select_plugin label="店铺地址" :areaObj="shop_city_data" @send="getShopAreaData"></city_select_plugin>
         </Col>
         <Col :xs="24" :sm="4" :md="6">
-          <FormItem label="服务地址">
-            <Row>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select style="width:100%;" @on-change="service_province_cg" placeholder="省">
-                    <Option v-for="(val,key) in service_city_province" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="service_1" style="width:100%" @on-change="service_city_cg" placeholder="市">
-                    <Option v-for="(val,key) in service_city" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-              <Col span="8">
-                <FormItem style="width: 100%">
-                  <Select v-model="service_2" style="width:100%" placeholder="区">
-                    <Option v-for="(val,key) in service_region" :value="key" :key="key">{{ val }}</Option>
-                  </Select>
-                </FormItem>
-              </Col>
-            </Row>
-          </FormItem>
+          <city_select_plugin label="服务地址" :areaObj="service_city_data" @send="getAreaData"></city_select_plugin>
         </Col>
       </Row>
     </Form>
@@ -95,11 +48,11 @@
     </div>
     <div style="margin-bottom: 10px;text-align: right">
       <span style="vertical-align: middle">共 {{count}} 条</span>
-      <Page style="display: inline-block;vertical-align: middle" v-show="count" :total="count" show-total :current="param.page"
+      <Page style="display: inline-block;vertical-align: middle" v-show="count>param.limit" :total="count" show-total :current="param.page"
             @on-change="pageChange"
             :page-size="param.limit" simple/>
     </div>
-    <Table :columns="logsCol" :data="logs" class="logs-table" @on-sort-change="orderBy">
+    <Table :columns="logsCol" :data="logs" class="logs-table" @on-sort-change="orderBy" :loading="loading">
       <template slot-scope="{ row, index }" slot="role_id">
         <div @click="roleManger(row)">
           <template v-for="role in row.role_id.split(',')">
@@ -183,7 +136,7 @@
     >
       <CheckboxGroup v-model="roleMangerData">
         <template v-for="(data, k) in roles">
-          <Checkbox :title="data.comments" :key="k" :label="k">{{data.role_ch_name}}</Checkbox>
+          <Checkbox :title="data.comments" :key="k" :label="k" style="margin-right: 20px;">{{data.role_ch_name}}</Checkbox>
         </template>
       </CheckboxGroup>
       <div slot="footer">
@@ -221,14 +174,17 @@
 
 <script>
 
-import { ajax } from '@/util'
-import axios from 'axios'
+import { ajax, dateFormat } from '@/util'
 import Qs from 'qs'
+import date_plugin from '@/view/plugins/date_plugin'
+import city_select_plugin from '@/view/components/city_select_plugin'
 
 export default {
   name: 'cs-logs',
   data () {
     return {
+      dateType: 'date',
+      loading: false,
       userState: {
         0: '冻结',
         1: '在用'
@@ -252,25 +208,15 @@ export default {
         }
       },
       shop_city_data: {
-        county: 1,
         province: '',
-        city: ''
+        city: '',
+        region: ''
       },
       service_city_data: {
-        county: 1,
         province: '',
-        city: ''
+        city: '',
+        region: ''
       },
-      shop_province: {},
-      shop_city: {},
-      shop_region: {},
-      shop_1: '',
-      shop_2: '',
-      service_city_province: {},
-      service_city: {},
-      service_region: {},
-      service_1: '',
-      service_2: '',
       shop_state: {
         '-2': '被冻结',
         '-1': '已打烊',
@@ -371,7 +317,8 @@ export default {
       }, {
         title: '收藏次数',
         key: 'collect_times',
-        sortable: 'custom'
+        sortable: 'custom',
+        width: 110
       }, {
         title: '创建时间',
         key: 'create_date',
@@ -384,28 +331,30 @@ export default {
         title: '状态',
         slot: 'state',
         key: 'state',
-        sortable: 'custom'
+        sortable: 'custom',
+        width: 90,
+        align: 'center'
       },
       {
         title: '操作',
-        slot: 'option'
+        slot: 'option',
+        width: 70,
+        align: 'center'
       }],
       logs: []
     }
   },
-  components: {},
+  components: {
+    date_plugin, city_select_plugin
+  },
   methods: {
-    dateFormat: function (date) {
-      let d = new Date(date)
-      return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate()
-    },
     search: function (e) {
       e.target.blur()
       this.param.page = 1
       for (let o in this.param) {
         if (this.param.hasOwnProperty(o)) {
           if (this.param[o] && (o === 'timemin' || o === 'timemax')) {
-            this.param[o] = this.dateFormat(this.param[o])
+            this.param[o] = dateFormat(this.param[o])
           }
         }
       }
@@ -413,13 +362,13 @@ export default {
       if (Number(this.shop_city_data.province)) {
         this.param.city = {}
         this.param.city.province = this.shop_city_data.province
-        if (this.shop_1) {
-          this.param.city.city = this.shop_1
+        if (this.shop_city_data.city) {
+          this.param.city.city = this.shop_city_data.city
         } else {
           delete this.param.city.city
         }
-        if (this.shop_2) {
-          this.param.city.region = this.shop_2
+        if (this.shop_city_data.region) {
+          this.param.city.region = this.shop_city_data.region
         } else {
           delete this.param.city.region
         }
@@ -430,13 +379,13 @@ export default {
       if (Number(this.service_city_data.province)) {
         this.param.service_city = {}
         this.param.service_city.province = this.service_city_data.province
-        if (this.service_1) {
-          this.param.service_city.city = this.service_1
+        if (this.service_city_data.city) {
+          this.param.service_city.city = this.service_city_data.city
         } else {
           delete this.param.service_city.city
         }
-        if (this.service_2) {
-          this.param.service_city.region = this.service_2
+        if (this.service_city_data.region) {
+          this.param.service_city.region = this.service_city_data.region
         } else {
           delete this.param.service_city.region
         }
@@ -451,15 +400,15 @@ export default {
       } else {
         delete this.param.order
       }
-      this.$Loading.start()
+      this.loading = true
       ajax('/Adminrelas-ShopsManage-shopsList', Qs.stringify(this.param), true,
         (data) => {
-          this.$Loading.finish()
+          this.loading = false
           this.logs = data.err_msg.data
           this.count = Number(data.err_msg.num)
         },
         () => {
-          this.$Loading.finish()
+          this.loading = false
         })
     },
     pageChange: function (val) {
@@ -501,74 +450,11 @@ export default {
       }
       this.getData()
     },
-    cityData: function (data, type, index) {
-      axios({
-        url: '/Home-Config-areaConfig',
-        method: 'post',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        data: Qs.stringify(data)
-      }).then((res) => {
-        res.data[0] = '请选择'
-        if (index === 0) {
-          this.service_city_province = res.data
-          this.shop_province = res.data
-        }
-        if (type === 'shop') {
-          if (index === 1) {
-            this.shop_city = res.data
-          } else if (index === 2) {
-            this.shop_region = res.data
-          }
-        } else if (type === 'service_city') {
-          if (index === 1) {
-            this.service_city = res.data
-          } else if (index === 2) {
-            this.service_region = res.data
-          }
-        }
-      })
+    getShopAreaData: function (val) {
+      this.shop_city_data = JSON.parse(JSON.stringify(val))
     },
-    shop_province_cg: function (val) {
-      if (val === 0) {
-        this.shop_city = {}
-        this.shop_region = {}
-        this.shop_1 = ''
-        this.shop_2 = ''
-      } else {
-        this.shop_city_data.province = val
-        this.cityData(this.shop_city_data, 'shop', 1)
-      }
-    },
-    shop_city_cg: function (val) {
-      if (val === 0) {
-        this.shop_region = {}
-        this.shop_2 = ''
-      } else {
-        this.shop_city_data.city = val
-        this.cityData(this.shop_city_data, 'shop', 2)
-      }
-    },
-    service_province_cg: function (val) {
-      if (val === 0) {
-        this.service_city = {}
-        this.service_region = {}
-        this.service_1 = ''
-        this.service_2 = ''
-      } else {
-        this.service_city_data.province = val
-        this.cityData(this.service_city_data, 'service_city', 1)
-      }
-    },
-    service_city_cg: function (val) {
-      if (val === 0) {
-        this.service_region = {}
-        this.service_2 = ''
-      } else {
-        this.service_city_data.city = val
-        this.cityData(this.service_city_data, 'service_city', 2)
-      }
+    getAreaData: function (val) {
+      this.service_city_data = JSON.parse(JSON.stringify(val))
     },
     stateChange: function (row, index) {
       if (Number(row.state) === -2) {
@@ -611,11 +497,14 @@ export default {
     pageStaffChange: function (val) {
       this.staffParam.curr_page = val
       this.getShopUserStaff()
+    },
+    getDatePlugin: function (val) {
+      this.param.timemin = val.min ? dateFormat(val.min, this.dateType) : ''
+      this.param.timemax = val.max ? dateFormat(val.max, this.dateType) : ''
     }
   },
   mounted () {
     this.getData()
-    this.cityData(this.shop_city_data, 'service_city', 0)
   }
 }
 </script>
@@ -626,6 +515,7 @@ export default {
     color: #2d8cf0;
     cursor: pointer;
     display: inline-block;
+    margin-right: 5px;
   }
 
   .logs-table-m {
