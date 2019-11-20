@@ -18,7 +18,15 @@ import 'v-org-tree/dist/v-org-tree.css'
 // 实际打包时应该不引入mock
 /* eslint-disable */
 if (process.env.NODE_ENV !== 'production') require('@/mock')
+import VueAMap from 'vue-amap';
 
+Vue.use(VueAMap);
+VueAMap.initAMapApiLoader({
+  key: 'f5c44d9adb2731c867f9470ea4643996',
+  plugin: ['AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType','AMap.PlaceSearch', 'AMap.Geolocation', 'AMap.Geocoder'],
+  v: '1.4.4',
+  uiVersion: '1.0.11'
+});
 Vue.use(iView, {
   i18n: (key, value) => i18n.t(key, value)
 })

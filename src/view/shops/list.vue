@@ -2,49 +2,37 @@
   <div>
     <Form :label-width="70" @submit.native.prevent="">
       <Row>
-        <Col :xs="24" :sm="4" :md="6">
+        <Col :xs="24" :sm="12" :md="8" :lg="6">
           <FormItem label="店铺名称">
             <Input v-model="param.shopName" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="4" :md="6">
+        <Col :xs="24" :sm="12" :md="8" :lg="6">
           <FormItem label="公司名称">
             <Input v-model="param.company_name" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="4" :md="6">
+        <Col :xs="24" :sm="12" :md="8" :lg="6">
           <FormItem label="信用代码">
             <Input v-model="param.tax_no" @keydown.enter.native="search"></Input>
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="4" :md="6">
+        <Col :xs="24" :sm="12" :md="8" :lg="6">
           <FormItem label="创建时间">
             <date_plugin :dateType="dateType" @send="getDatePlugin"></date_plugin>
-<!--            <Row>-->
-<!--              <Col span="11">-->
-<!--                <FormItem style="width: 100%">-->
-<!--                  <DatePicker type="date" style="width: 100%" :options="timeminOptions" v-model="param.timemin"></DatePicker>-->
-<!--                </FormItem>-->
-<!--              </Col>-->
-<!--              <Col span="2" style="text-align: center">-</Col>-->
-<!--              <Col span="11">-->
-<!--                <FormItem style="width: 100%">-->
-<!--                  <DatePicker type="date" style="width: 100%" :options="timemaxOptions" v-model="param.timemax"></DatePicker>-->
-<!--                </FormItem>-->
-<!--              </Col>-->
-<!--            </Row>-->
           </FormItem>
         </Col>
-        <Col :xs="24" :sm="4" :md="6">
+        <Col :xs="24" :sm="12" :md="8" :lg="6">
           <city_select_plugin label="店铺地址" :areaObj="shop_city_data" @send="getShopAreaData"></city_select_plugin>
         </Col>
-        <Col :xs="24" :sm="4" :md="6">
+        <Col :xs="24" :sm="12" :md="8" :lg="6">
           <city_select_plugin label="服务地址" :areaObj="service_city_data" @send="getAreaData"></city_select_plugin>
         </Col>
       </Row>
     </Form>
     <div style="text-align: center;margin: 0 0 15px 0">
       <Button type="primary" @click="search" icon="ios-search">搜索</Button>
+      <Button icon="md-download" :loading="exportLoading" @click="exportExcel" style="margin-left: 10px;">导出EXCEL</Button>
     </div>
     <div style="margin-bottom: 10px;text-align: right">
       <span style="vertical-align: middle">共 {{count}} 条</span>
@@ -175,6 +163,7 @@
 <script>
 
 import { ajax, dateFormat } from '@/util'
+import excel from '@/libs/excel'
 import Qs from 'qs'
 import date_plugin from '@/view/plugins/date_plugin'
 import city_select_plugin from '@/view/components/city_select_plugin'
@@ -184,6 +173,7 @@ export default {
   data () {
     return {
       dateType: 'date',
+      exportLoading: false,
       loading: false,
       userState: {
         0: '冻结',
@@ -501,7 +491,24 @@ export default {
     getDatePlugin: function (val) {
       this.param.timemin = val.min ? dateFormat(val.min, this.dateType) : ''
       this.param.timemax = val.max ? dateFormat(val.max, this.dateType) : ''
+    },
+    exportExcel () {
+      if (this.logs.length) {
+        this.exportLoading = true
+        const params = {
+          title: ['店铺名字', '详细地址', '创建时间'],
+          key: ['shop_name', 'shop_address', 'create_date'],
+          data: this.logs,
+          autoWidth: true,
+          filename: '分类列表'
+        }
+        excel.export_array_to_excel(params)
+        this.exportLoading = false
+      } else {
+        this.$Message.info('表格数据不能为空！')
+      }
     }
+
   },
   mounted () {
     this.getData()

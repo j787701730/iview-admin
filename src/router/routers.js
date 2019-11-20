@@ -447,7 +447,7 @@ export default [
         'component': () => import('@/view/components/tree-select/index.vue')
       },
       {
-        'path': 'tree_select_page',
+        'path': 'visits',
         'name': 'dengluredian',
         'meta': {
           'icon': 'md-arrow-dropdown-circle',
@@ -456,7 +456,7 @@ export default [
             51
           ]
         },
-        'component': () => import('@/view/components/tree-select/index.vue')
+        'component': () => import('@/view/users/visits.vue')
       },
       {
         'path': 'tree_select_page',
